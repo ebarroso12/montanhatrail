@@ -1,4 +1,4 @@
-const { getSupabase } = require('./_lib/supabase');
+const db = require('./_lib/db');
 const { parseBody } = require('./_lib/body');
 
 function isValidEmail(email) {
@@ -38,16 +38,10 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const supabase = getSupabase();
-    const { error } = await supabase.from('leads').insert({
-      name: name || null,
-      email,
-      phone: phone || null,
-      message: message || null,
-      source: 'site',
-    });
-
-    if (error) throw error;
+    await db.query(
+      'INSERT INTO leads (name, email, phone, message, source) VALUES ($1, $2, $3, $4, $5)',
+      [name || null, email, phone || null, message || null, 'site']
+    );
 
     res.status(200).json({ ok: true });
   } catch (err) {

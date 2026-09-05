@@ -1,4 +1,4 @@
-const { getSupabase } = require('./_lib/supabase');
+const db = require('./_lib/db');
 const { parseBody } = require('./_lib/body');
 
 // Fixed allow-list of click labels this site actually emits — keeps the
@@ -38,8 +38,10 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const supabase = getSupabase();
-    await supabase.from('clicks').insert({ label, target_url: targetUrl || null, page });
+    await db.query(
+      'INSERT INTO clicks (label, target_url, page) VALUES ($1, $2, $3)',
+      [label, targetUrl || null, page]
+    );
   } catch (err) {
     // Swallow errors — click tracking should never break the UX.
   }
