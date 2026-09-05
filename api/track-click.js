@@ -14,6 +14,13 @@ const ALLOWED_LABELS = new Set([
   'cta-final-mercadolivre',
   'footer-shopee',
   'footer-mercadolivre',
+  'alpha-hero-shopee',
+  'alpha-hero-mercadolivre',
+  'alpha-cta-shopee',
+  'alpha-cta-mercadolivre',
+  'alpha-footer-shopee',
+  'alpha-footer-mercadolivre',
+  'alpha-lineup-color',
 ]);
 
 /**
