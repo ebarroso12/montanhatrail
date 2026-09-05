@@ -1,0 +1,161 @@
+/* =========================================================================
+   ALPHA RUN — identidade "elite / high-ticket" da New Story Footwear
+   Escopado em .ar-page para conviver com o header/footer padrão do site
+   (que continuam usando os tokens de style.css) sem vazar estilos.
+   ========================================================================= */
+.ar-page{
+  --ar-bg:#eef0e9;
+  --ar-bg-2:#e2e5da;
+  --ar-graphite:#14160f;
+  --ar-graphite-2:#1c1f16;
+  --ar-soft:rgba(20,22,15,.68);
+  --ar-soft-light:rgba(238,240,233,.7);
+  --ar-line:rgba(20,22,15,.14);
+  --ar-line-light:rgba(238,240,233,.2);
+  --ar-oxide:#b7391f;
+  --ar-oxide-dark:#8f2c17;
+  --ar-steel:#82897e;
+  --ar-display:'Big Shoulders Display', var(--sans);
+  --ar-mono:'IBM Plex Mono', 'SFMono-Regular', Menlo, monospace;
+
+  background:var(--ar-bg);
+  color:var(--ar-graphite);
+}
+
+.ar-page h1,.ar-page h2,.ar-page h3{font-family:var(--ar-display);letter-spacing:-.01em}
+.ar-page .eyebrow{color:var(--ar-oxide)}
+.ar-page .eyebrow-light{color:#e7b7a4}
+.ar-page .body-text{color:var(--ar-soft)}
+.ar-page .light-soft{color:var(--ar-soft-light)}
+
+/* ---------- mono / spec readout ---------- */
+.ar-mono{font-family:var(--ar-mono);text-transform:uppercase;letter-spacing:.06em}
+.ar-kicker{
+  display:flex;align-items:center;gap:10px;font-family:var(--ar-mono);
+  font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ar-oxide);
+  font-weight:600;margin-bottom:18px;
+}
+.ar-kicker .rule{width:32px;height:1px;background:currentColor;display:inline-block}
+.ar-kicker.on-dark{color:#e7b7a4}
+
+/* ---------- hero ---------- */
+.ar-hero{
+  padding:150px 0 90px;background:
+    radial-gradient(1100px 620px at 78% 18%, rgba(183,57,31,.10), transparent 60%),
+    var(--ar-bg);
+  border-bottom:1px solid var(--ar-line);
+}
+.ar-hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:60px;align-items:center}
+.ar-hero h1{font-size:clamp(3rem,7vw,5.6rem);line-height:.94;margin-bottom:22px;text-transform:uppercase}
+.ar-hero h1 span{display:block}
+.ar-hero h1 .accent{color:var(--ar-oxide)}
+.ar-hero-lead{max-width:44ch;font-size:1.05rem;margin-bottom:34px}
+
+.ar-spec-strip{
+  display:grid;grid-template-columns:repeat(3,auto);gap:0;margin:0 0 36px;
+  border-top:1px solid var(--ar-line);border-bottom:1px solid var(--ar-line);
+}
+.ar-spec-strip div{padding:16px 26px 16px 0}
+.ar-spec-strip div + div{padding-left:26px;border-left:1px solid var(--ar-line)}
+.ar-spec-strip b{display:block;font-family:var(--ar-display);font-size:1.5rem;line-height:1}
+.ar-spec-strip span{font-family:var(--ar-mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ar-steel)}
+
+/* colorway swatch selector */
+.ar-swatches{display:flex;gap:12px;margin-bottom:8px;flex-wrap:wrap}
+.ar-swatch{
+  display:flex;align-items:center;gap:10px;padding:10px 16px 10px 10px;
+  border:1px solid var(--ar-line);background:#fff;transition:all .18s ease;
+}
+.ar-swatch .dot{width:20px;height:20px;border-radius:50%;flex:none;border:1px solid rgba(0,0,0,.12)}
+.ar-swatch span{font-family:var(--ar-mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.ar-swatch:hover{border-color:var(--ar-graphite)}
+.ar-swatch.is-active{border-color:var(--ar-graphite);background:var(--ar-graphite);}
+.ar-swatch.is-active span{color:#fff}
+
+.ar-hero-media{position:relative}
+.ar-hero-media-frame{
+  position:relative;aspect-ratio:1/1;background:
+    radial-gradient(circle at 50% 42%, #fff 0%, #fff 46%, var(--ar-bg-2) 100%);
+  border:1px solid var(--ar-line);overflow:hidden;
+}
+.ar-hero-media-frame img{width:100%;height:100%;object-fit:contain;padding:34px}
+.ar-hero-tag{
+  position:absolute;top:18px;left:18px;background:var(--ar-graphite);color:#fff;
+  font-family:var(--ar-mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;
+  padding:8px 12px;font-weight:600;
+}
+.ar-hero-tag b{color:var(--ar-oxide)}
+
+/* ---------- ticker (specs marquee) ---------- */
+.ar-ticker{background:var(--ar-graphite);color:var(--ar-soft-light);overflow:hidden;padding:14px 0}
+.ar-ticker-track{
+  display:flex;gap:16px;white-space:nowrap;width:max-content;
+  animation:ar-scroll 30s linear infinite;
+  font-family:var(--ar-mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600;
+}
+.ar-ticker-track span:nth-child(odd){color:var(--ar-oxide)}
+@keyframes ar-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ---------- lineup (color story) ---------- */
+.ar-lineup{padding:110px 0;background:var(--ar-bg)}
+.ar-lineup-head{max-width:640px;margin-bottom:56px}
+.ar-lineup-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--ar-line)}
+.ar-lineup-card{
+  background:var(--ar-bg);padding:0;cursor:pointer;border:none;text-align:left;
+  display:flex;flex-direction:column;transition:background .18s ease;
+}
+.ar-lineup-card:hover,.ar-lineup-card.is-active{background:#fff}
+.ar-lineup-thumb{aspect-ratio:1/1;background:var(--ar-bg-2);display:flex;align-items:center;justify-content:center;padding:22px}
+.ar-lineup-thumb img{width:100%;height:100%;object-fit:contain}
+.ar-lineup-card-label{padding:16px 18px 22px;display:flex;align-items:center;gap:10px}
+.ar-lineup-card-label .dot{width:14px;height:14px;border-radius:50%;flex:none;border:1px solid rgba(0,0,0,.12)}
+.ar-lineup-card-label span{font-family:var(--ar-mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+
+/* ---------- engineered-for attributes ---------- */
+.ar-engineered{padding:110px 0;background:var(--ar-graphite);color:#fff}
+.ar-eng-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:70px;align-items:start}
+.ar-eng-grid h2{color:#fff;font-size:clamp(2.1rem,4.6vw,3.4rem);text-transform:uppercase;margin-bottom:20px}
+.ar-eng-list{display:flex;flex-direction:column;gap:0;margin-top:10px}
+.ar-eng-list li{
+  display:grid;grid-template-columns:64px 1fr;gap:22px;padding:26px 0;
+  border-bottom:1px solid var(--ar-line-light);
+}
+.ar-eng-list li:first-child{border-top:1px solid var(--ar-line-light)}
+.ar-eng-num{font-family:var(--ar-mono);color:var(--ar-oxide);font-size:.9rem;padding-top:4px}
+.ar-eng-list h3{color:#fff;font-family:var(--sans);font-weight:700;font-size:1.02rem;text-transform:none;margin-bottom:6px}
+.ar-eng-list p{color:var(--ar-soft-light);margin:0;font-size:.92rem}
+
+/* ---------- gallery (per colorway) ---------- */
+.ar-gallery{padding:110px 0;background:var(--ar-bg)}
+.ar-gallery-head{display:flex;justify-content:space-between;gap:40px;flex-wrap:wrap;align-items:flex-end;margin-bottom:40px}
+.ar-gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.ar-gallery-item{position:relative;display:block;overflow:hidden;background:#fff;border:1px solid var(--ar-line)}
+.ar-gallery-item img{aspect-ratio:1/1;object-fit:contain;padding:10px;transition:transform .5s ease}
+.ar-gallery-item:hover img{transform:scale(1.05)}
+
+/* ---------- CTA band ---------- */
+.ar-cta-band{padding:120px 0;background:var(--ar-graphite);color:#fff;text-align:center}
+.ar-cta-band .wrap{max-width:680px;display:flex;flex-direction:column;align-items:center}
+.ar-cta-band h2{color:#fff;text-transform:uppercase;font-size:clamp(2.2rem,5vw,3.6rem)}
+.ar-cta-band .cta-row{justify-content:center;margin-top:10px}
+.ar-page .btn-oxide{background:var(--ar-oxide);color:#fff}
+.ar-page .btn-oxide:hover{background:var(--ar-oxide-dark)}
+.ar-page .btn-outline-oxide{border-color:var(--ar-oxide);color:var(--ar-oxide)}
+.ar-page .btn-outline-oxide:hover{background:rgba(183,57,31,.1)}
+
+/* ---------- lead card reuse w/ ar tokens ---------- */
+.ar-page .size-card{background:#fff;border:1px solid var(--ar-line)}
+.ar-page .field-row{border-color:var(--ar-graphite)}
+.ar-page .field-suffix{background:var(--ar-graphite)}
+
+@media (max-width:900px){
+  .ar-hero-grid{grid-template-columns:1fr;gap:40px}
+  .ar-eng-grid{grid-template-columns:1fr;gap:30px}
+  .ar-lineup-grid{grid-template-columns:1fr 1fr}
+  .ar-gallery-grid{grid-template-columns:1fr 1fr}
+  .ar-spec-strip{grid-template-columns:repeat(3,1fr)}
+}
+@media (max-width:600px){
+  .ar-hero{padding:130px 0 60px}
+  .ar-lineup,.ar-engineered,.ar-gallery,.ar-cta-band{padding:70px 0}
+}
