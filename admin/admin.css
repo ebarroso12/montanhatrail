@@ -1,0 +1,93 @@
+/* ===== Painel administrativo — reaproveita os tokens de /css/style.css ===== */
+
+body.admin-body{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+
+.admin-topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:18px 28px;
+  background:var(--ink);
+  color:var(--cream);
+}
+.admin-topbar .brand{font-family:var(--serif);font-size:1.1rem;letter-spacing:.02em}
+.admin-topbar .brand b{color:var(--orange)}
+.admin-topbar-right{display:flex;align-items:center;gap:16px;font-size:.85rem;color:var(--cream-soft)}
+
+.admin-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:11px 20px;border-radius:var(--radius);
+  font-size:.85rem;font-weight:600;letter-spacing:.02em;text-transform:uppercase;
+  border:1px solid transparent;transition:opacity .15s ease, background .15s ease;
+}
+.admin-btn-primary{background:var(--orange);color:var(--ink)}
+.admin-btn-primary:hover{opacity:.88}
+.admin-btn-ghost{background:transparent;border-color:var(--line-light);color:var(--cream)}
+.admin-btn-ghost:hover{background:rgba(242,235,221,.08)}
+.admin-btn:disabled{opacity:.55;cursor:not-allowed}
+
+/* ---- Login screen ---- */
+.admin-login-wrap{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  padding:40px 20px;background:var(--ink);
+}
+.admin-login-card{
+  width:100%;max-width:400px;background:var(--cream);border-radius:4px;
+  padding:40px 36px;box-shadow:0 30px 60px rgba(0,0,0,.35);
+}
+.admin-login-card h1{font-size:1.7rem;margin-bottom:6px}
+.admin-login-card p.sub{color:var(--ink-soft);margin-bottom:28px;font-size:.92rem}
+
+.admin-field{margin-bottom:18px}
+.admin-field label{display:block;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin-bottom:6px}
+.admin-field input,.admin-field textarea{
+  width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius);
+  background:#fff;font-family:var(--sans);font-size:.95rem;color:var(--ink);
+}
+.admin-field input:focus,.admin-field textarea:focus{outline:2px solid var(--orange);outline-offset:1px}
+.admin-field.checkbox{display:flex;align-items:center;gap:10px}
+.admin-field.checkbox input{width:auto}
+
+.admin-msg{border-radius:var(--radius);padding:12px 14px;font-size:.88rem;margin-bottom:18px}
+.admin-msg-error{background:rgba(122,52,33,.12);color:var(--brown);border:1px solid rgba(122,52,33,.25)}
+.admin-msg-success{background:rgba(120,150,90,.14);color:#3c5a2a;border:1px solid rgba(120,150,90,.3)}
+.admin-msg[hidden]{display:none}
+
+/* ---- Dashboard ---- */
+.admin-main{flex:1;background:var(--cream);padding:36px 28px 80px}
+.admin-shell{max-width:1080px;margin:0 auto}
+
+.admin-tabs{display:flex;gap:6px;margin-bottom:28px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.admin-tab{
+  padding:12px 18px;font-size:.85rem;font-weight:600;letter-spacing:.02em;
+  color:var(--ink-soft);border-bottom:2px solid transparent;margin-bottom:-1px;
+}
+.admin-tab.is-active{color:var(--ink);border-bottom-color:var(--orange)}
+.admin-panel{display:none}
+.admin-panel.is-active{display:block}
+
+.admin-card{background:#fff;border:1px solid var(--line);border-radius:4px;padding:24px;margin-bottom:20px}
+.admin-card h2{font-size:1.15rem;margin-bottom:4px}
+.admin-card p.hint{color:var(--ink-soft);font-size:.85rem;margin-bottom:18px}
+
+.admin-stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:8px}
+.admin-stat{background:var(--cream-2);border-radius:4px;padding:16px}
+.admin-stat .num{font-family:var(--serif);font-size:1.9rem;display:block;line-height:1}
+.admin-stat .label{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft)}
+
+table.admin-table{width:100%;border-collapse:collapse;font-size:.88rem}
+table.admin-table th{
+  text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--ink-soft);padding:8px 10px;border-bottom:1px solid var(--line);
+}
+table.admin-table td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top}
+table.admin-table tr:last-child td{border-bottom:none}
+.admin-table-wrap{overflow-x:auto}
+.admin-empty{color:var(--ink-soft);font-size:.9rem;padding:20px 0;text-align:center}
+
+.admin-loading{color:var(--ink-soft);font-size:.9rem}
+.admin-form-actions{display:flex;gap:12px;margin-top:6px}

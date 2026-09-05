@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel — Adventure Trail</title>
+<meta name="robots" content="noindex, nofollow">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/admin/admin.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛰️</text></svg>">
+</head>
+<body class="admin-body">
+
+<div class="admin-topbar">
+  <span class="brand">ADVENTURE<b>TRAIL</b> · painel</span>
+  <div class="admin-topbar-right">
+    <a href="/" target="_blank" rel="noopener" style="color:inherit">Ver site ↗</a>
+    <button class="admin-btn admin-btn-ghost" id="logout-btn">Sair</button>
+  </div>
+</div>
+
+<main class="admin-main">
+  <div class="admin-shell">
+
+    <nav class="admin-tabs">
+      <button class="admin-tab is-active" data-tab="leads">Leads</button>
+      <button class="admin-tab" data-tab="clicks">Cliques</button>
+      <button class="admin-tab" data-tab="content">Conteúdo</button>
+      <button class="admin-tab" data-tab="security">Segurança</button>
+    </nav>
+
+    <!-- LEADS -->
+    <section class="admin-panel is-active" id="panel-leads">
+      <div class="admin-card">
+        <h2>Leads capturados</h2>
+        <p class="hint">Pessoas que deixaram o e-mail no formulário "Fique por dentro" do site.</p>
+        <div id="leads-loading" class="admin-loading">Carregando…</div>
+        <div class="admin-table-wrap" style="display:none" id="leads-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Data</th><th>Nome</th><th>E-mail</th><th>Telefone</th><th>Mensagem</th></tr></thead>
+            <tbody id="leads-tbody"></tbody>
+          </table>
+        </div>
+        <div class="admin-empty" id="leads-empty" style="display:none">Nenhum lead recebido ainda.</div>
+      </div>
+    </section>
+
+    <!-- CLICKS -->
+    <section class="admin-panel" id="panel-clicks">
+      <div class="admin-card">
+        <h2>Cliques nos botões de compra</h2>
+        <p class="hint">Total de cliques por botão, e quantos aconteceram nos últimos 7 dias.</p>
+        <div id="clicks-loading" class="admin-loading">Carregando…</div>
+        <div id="clicks-content" style="display:none">
+          <div class="admin-stat-row" id="clicks-stats"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTENT -->
+    <section class="admin-panel" id="panel-content">
+      <div class="admin-card">
+        <h2>Textos e links principais</h2>
+        <p class="hint">Alterações aparecem no site em poucos segundos, sem precisar mexer no código.</p>
+
+        <div class="admin-msg admin-msg-success" id="content-success" hidden>Salvo com sucesso.</div>
+        <div class="admin-msg admin-msg-error" id="content-error" hidden></div>
+
+        <form id="content-form">
+          <div class="admin-field">
+            <label for="hero_eyebrow">Selo acima do título (hero)</label>
+            <input type="text" id="hero_eyebrow" name="hero_eyebrow" placeholder="Para quem escolhe o caminho">
+          </div>
+          <div class="admin-field">
+            <label for="hero_title_line1">Título — primeira linha</label>
+            <input type="text" id="hero_title_line1" name="hero_title_line1" placeholder="Onde a terra chama,">
+          </div>
+          <div class="admin-field">
+            <label for="hero_title_line2">Título — segunda linha (itálico)</label>
+            <input type="text" id="hero_title_line2" name="hero_title_line2" placeholder="você vai.">
+          </div>
+          <div class="admin-field">
+            <label for="hero_subtitle">Subtítulo</label>
+            <textarea id="hero_subtitle" name="hero_subtitle" rows="2" placeholder="Um tênis Adventure para acompanhar o ritmo de trilhas e caminhadas…"></textarea>
+          </div>
+          <div class="admin-field">
+            <label for="shopee_url">Link da Shopee</label>
+            <input type="url" id="shopee_url" name="shopee_url" placeholder="https://shopee.com.br/...">
+          </div>
+          <div class="admin-field">
+            <label for="mercadolivre_url">Link do Mercado Livre</label>
+            <input type="url" id="mercadolivre_url" name="mercadolivre_url" placeholder="https://produto.mercadolivre.com.br/...">
+          </div>
+          <div class="admin-field checkbox">
+            <input type="checkbox" id="promo_banner_enabled" name="promo_banner_enabled">
+            <label for="promo_banner_enabled" style="margin:0">Mostrar faixa de promoção no topo do site</label>
+          </div>
+          <div class="admin-field">
+            <label for="promo_banner_text">Texto da faixa de promoção</label>
+            <input type="text" id="promo_banner_text" name="promo_banner_text" placeholder="Frete grátis em compras acima de R$ 200">
+          </div>
+          <div class="admin-form-actions">
+            <button type="submit" class="admin-btn admin-btn-primary" id="content-submit">Salvar alterações</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- SECURITY -->
+    <section class="admin-panel" id="panel-security">
+      <div class="admin-card">
+        <h2>Alterar senha</h2>
+        <p class="hint">Recomendado trocar a senha inicial gerada pelo Claude no primeiro acesso.</p>
+
+        <div class="admin-msg admin-msg-success" id="pwd-success" hidden>Senha alterada com sucesso.</div>
+        <div class="admin-msg admin-msg-error" id="pwd-error" hidden></div>
+
+        <form id="password-form">
+          <div class="admin-field">
+            <label for="current-password">Senha atual</label>
+            <input type="password" id="current-password" autocomplete="current-password" required>
+          </div>
+          <div class="admin-field">
+            <label for="new-password">Nova senha (mín. 8 caracteres)</label>
+            <input type="password" id="new-password" autocomplete="new-password" minlength="8" required>
+          </div>
+          <div class="admin-form-actions">
+            <button type="submit" class="admin-btn admin-btn-primary" id="pwd-submit">Alterar senha</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script src="/admin/admin.js"></script>
+</body>
+</html>

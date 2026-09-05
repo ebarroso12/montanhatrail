@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel — Adventure Trail</title>
+<meta name="robots" content="noindex, nofollow">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/admin/admin.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛰️</text></svg>">
+</head>
+<body class="admin-body">
+
+<div class="admin-login-wrap">
+  <div class="admin-login-card">
+    <h1>Painel <em>Adventure Trail</em></h1>
+    <p class="sub">Acesso restrito à administração da loja.</p>
+
+    <div class="admin-msg admin-msg-error" id="login-error" hidden></div>
+
+    <form id="login-form" autocomplete="on">
+      <div class="admin-field">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" name="email" autocomplete="username" required>
+      </div>
+      <div class="admin-field">
+        <label for="password">Senha</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="admin-btn admin-btn-primary" id="login-submit" style="width:100%">Entrar</button>
+    </form>
+  </div>
+</div>
+
+<script>
+(function(){
+  var form = document.getElementById('login-form');
+  var errorBox = document.getElementById('login-error');
+  var submitBtn = document.getElementById('login-submit');
+
+  // If already logged in, skip straight to the dashboard.
+  fetch('/api/admin/session').then(function(r){ return r.json(); }).then(function(data){
+    if (data && data.authenticated) window.location.replace('/admin/dashboard.html');
+  }).catch(function(){});
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    errorBox.hidden = true;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Entrando…';
+
+    var email = document.getElementById('email').value.trim();
+    var password = document.getElementById('password').value;
+
+    fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, password: password })
+    }).then(function(r){ return r.json().then(function(data){ return { status: r.status, data: data }; }); })
+      .then(function(res){
+        if (res.status === 200 && res.data.ok) {
+          window.location.href = '/admin/dashboard.html';
+          return;
+        }
+        errorBox.textContent = res.data.message || 'Não foi possível entrar. Tente novamente.';
+        errorBox.hidden = false;
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Entrar';
+      })
+      .catch(function(){
+        errorBox.textContent = 'Erro de conexão. Tente novamente.';
+        errorBox.hidden = false;
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Entrar';
+      });
+  });
+})();
+</script>
+</body>
+</html>
