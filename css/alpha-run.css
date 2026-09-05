@@ -69,11 +69,13 @@
   font-weight:700;color:#fff;background:var(--ar-oxide);padding:5px 10px;
 }
 
-/* unavailable banner (shown only when the admin panel marks the product inactive) */
+/* unavailable banner (shown only when the admin panel marks the product inactive).
+   margin-top clears the fixed .site-header (64px tall + 12px vertical padding)
+   so the banner renders as its own bar instead of hiding behind the nav. */
 .ar-unavailable-banner{
   background:var(--ar-graphite);color:#fff;text-align:center;
   font-family:var(--ar-mono);font-size:.78rem;letter-spacing:.03em;
-  padding:14px 20px;
+  padding:14px 20px;margin-top:78px;
 }
 
 /* colorway swatch selector */
