@@ -91,3 +91,36 @@ table.admin-table tr:last-child td{border-bottom:none}
 
 .admin-loading{color:var(--ink-soft);font-size:.9rem}
 .admin-form-actions{display:flex;gap:12px;margin-top:6px}
+
+/* ---- Alpha Run image manager ---- */
+.admin-image-color{margin-bottom:26px}
+.admin-image-color:last-child{margin-bottom:0}
+.admin-image-color h3{font-size:.9rem;margin-bottom:10px}
+.admin-image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px}
+.admin-image-thumb{
+  position:relative;aspect-ratio:1/1;border:1px solid var(--line);border-radius:4px;
+  overflow:hidden;background:#fff;
+}
+.admin-image-thumb img{width:100%;height:100%;object-fit:contain;padding:6px}
+.admin-image-hero-badge{
+  position:absolute;top:6px;left:6px;background:var(--orange);color:var(--ink);
+  font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;font-weight:700;
+  padding:3px 6px;border-radius:2px;
+}
+.admin-image-thumb-actions{
+  position:absolute;left:0;right:0;bottom:0;display:flex;gap:4px;padding:4px;
+  background:rgba(255,255,255,.92);
+}
+.admin-btn-mini{
+  flex:1;font-size:.66rem;padding:5px 4px;border-radius:2px;border:1px solid var(--line);
+  background:#fff;color:var(--ink);cursor:pointer;
+}
+.admin-btn-mini:hover{background:var(--cream-2)}
+.admin-btn-mini-danger{color:var(--brown)}
+.admin-image-upload{
+  aspect-ratio:1/1;border:1px dashed var(--line);border-radius:4px;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  cursor:pointer;color:var(--ink-soft);font-size:.78rem;padding:8px;
+}
+.admin-image-upload:hover{border-color:var(--orange);color:var(--ink)}
+.admin-image-upload.is-uploading{opacity:.6;pointer-events:none}

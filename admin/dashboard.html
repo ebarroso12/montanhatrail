@@ -122,10 +122,39 @@
             <label for="alpha_run_mercadolivre_url">Link do Mercado Livre (Alpha Run)</label>
             <input type="url" id="alpha_run_mercadolivre_url" name="alpha_run_mercadolivre_url" placeholder="https://produto.mercadolivre.com.br/...">
           </div>
+
+          <div class="admin-field">
+            <label for="alpha_run_price_current">Preço atual (R$)</label>
+            <input type="text" inputmode="decimal" id="alpha_run_price_current" name="alpha_run_price_current" placeholder="399,90">
+          </div>
+          <div class="admin-field">
+            <label for="alpha_run_price_original">Preço "de" (riscado, opcional — só aparece se for maior que o atual)</label>
+            <input type="text" inputmode="decimal" id="alpha_run_price_original" name="alpha_run_price_original" placeholder="499,90">
+          </div>
+          <div class="admin-field checkbox">
+            <input type="checkbox" id="alpha_run_promo_enabled" name="alpha_run_promo_enabled">
+            <label for="alpha_run_promo_enabled" style="margin:0">Mostrar selo de promoção ao lado do preço</label>
+          </div>
+          <div class="admin-field">
+            <label for="alpha_run_promo_label">Texto do selo de promoção</label>
+            <input type="text" id="alpha_run_promo_label" name="alpha_run_promo_label" placeholder="Lançamento">
+          </div>
+          <div class="admin-field checkbox">
+            <input type="checkbox" id="alpha_run_active" name="alpha_run_active" checked>
+            <label for="alpha_run_active" style="margin:0">Produto ativo (visível no site)</label>
+          </div>
+          <p class="hint" style="margin-top:-8px">Desmarque para tirar o Alpha Run do ar temporariamente: a página passa a mostrar um aviso de "indisponível", os botões de compra não ativam mesmo com links preenchidos, e o card some da home e do rodapé. Nada é apagado — é só reativar quando quiser voltar a vender.</p>
+
           <div class="admin-form-actions">
             <button type="submit" class="admin-btn admin-btn-primary" id="content-alpha-submit">Salvar alterações</button>
           </div>
         </form>
+      </div>
+
+      <div class="admin-card">
+        <h2>Alpha Run — fotos</h2>
+        <p class="hint">Envie fotos reais do produto para cada cor. A foto marcada como "capa" vira o destaque daquela cor na página; as demais aparecem na galeria. Enquanto uma cor não tiver fotos enviadas aqui, o site continua mostrando as fotos padrão do lançamento.</p>
+        <div id="alpha-images-manager"></div>
       </div>
     </section>
 
