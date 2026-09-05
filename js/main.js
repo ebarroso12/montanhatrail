@@ -178,4 +178,130 @@
       else header.classList.remove("is-scrolled");
     });
   }
+
+  /* ---------- click tracking (CTA buttons) ---------- */
+  // Fire-and-forget: never blocks or delays the actual link click.
+  document.querySelectorAll("[data-track-label]").forEach(function (link) {
+    link.addEventListener("click", function () {
+      try {
+        fetch("/api/track-click", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            label: link.getAttribute("data-track-label"),
+            targetUrl: link.href,
+            page: window.location.pathname
+          }),
+          keepalive: true
+        }).catch(function () {});
+      } catch (e) {
+        /* tracking must never break the click-through */
+      }
+    });
+  });
+
+  /* ---------- lead capture form ---------- */
+  var leadForm = document.getElementById("lead-form");
+  if (leadForm) {
+    var leadSuccess = document.getElementById("lead-success");
+    var leadError = document.getElementById("lead-error");
+    var leadSubmit = document.getElementById("lead-submit");
+
+    leadForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      leadSuccess.hidden = true;
+      leadError.hidden = true;
+
+      var email = document.getElementById("lead-email").value.trim();
+      if (!email || email.indexOf("@") === -1) {
+        leadError.textContent = "Informe um e-mail válido.";
+        leadError.hidden = false;
+        return;
+      }
+
+      leadSubmit.disabled = true;
+      var originalLabel = leadSubmit.textContent;
+      leadSubmit.textContent = "Enviando…";
+
+      fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: document.getElementById("lead-name").value.trim(),
+          email: email,
+          website: document.getElementById("lead-website").value
+        })
+      })
+        .then(function (r) {
+          return r.json().then(function (data) {
+            return { status: r.status, data: data };
+          });
+        })
+        .then(function (res) {
+          leadSubmit.disabled = false;
+          leadSubmit.textContent = originalLabel;
+          if (res.status === 200 && res.data.ok) {
+            leadForm.reset();
+            leadSuccess.hidden = false;
+          } else {
+            leadError.textContent =
+              res.data.message || "Não foi possível enviar. Tente novamente.";
+            leadError.hidden = false;
+          }
+        })
+        .catch(function () {
+          leadSubmit.disabled = false;
+          leadSubmit.textContent = originalLabel;
+          leadError.textContent = "Erro de conexão. Tente novamente.";
+          leadError.hidden = false;
+        });
+    });
+  }
+
+  /* ---------- content overrides (edited from /admin) ---------- */
+  // Fails silently and keeps the static defaults above if the API is
+  // unreachable or not configured yet — this is a progressive enhancement,
+  // never a requirement for the page to render correctly.
+  fetch("/api/admin/content")
+    .then(function (r) {
+      return r.json();
+    })
+    .then(function (data) {
+      var content = (data && data.content) || {};
+      if (!Object.keys(content).length) return;
+
+      function setText(id, key) {
+        if (!content[key]) return;
+        var el = document.getElementById(id);
+        if (el) el.textContent = content[key];
+      }
+
+      setText("hero-eyebrow", "hero_eyebrow");
+      setText("hero-title-line1", "hero_title_line1");
+      setText("hero-title-line2", "hero_title_line2");
+      setText("hero-subtitle", "hero_subtitle");
+
+      if (content.shopee_url) {
+        document.querySelectorAll('[data-link="shopee"]').forEach(function (a) {
+          a.href = content.shopee_url;
+        });
+      }
+      if (content.mercadolivre_url) {
+        document.querySelectorAll('[data-link="mercadolivre"]').forEach(function (a) {
+          a.href = content.mercadolivre_url;
+        });
+      }
+
+      if (content.promo_banner_enabled === "true" && content.promo_banner_text) {
+        var banner = document.getElementById("promo-banner");
+        var bannerText = document.getElementById("promo-banner-text");
+        if (banner && bannerText) {
+          bannerText.textContent = content.promo_banner_text;
+          banner.hidden = false;
+        }
+      }
+    })
+    .catch(function () {
+      /* keep static content as-is */
+    });
 })();
