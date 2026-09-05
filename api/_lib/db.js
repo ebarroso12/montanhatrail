@@ -36,9 +36,18 @@ function getPool() {
 }
 
 async function query(text, params) {
-  const client = await getPool().connect();
+  let client;
+  try {
+    client = await getPool().connect();
+  } catch (err) {
+    console.error('[db] falha ao conectar no Postgres:', err && err.message, err && err.code);
+    throw err;
+  }
   try {
     return await client.query(text, params);
+  } catch (err) {
+    console.error('[db] falha ao executar query:', err && err.message, err && err.code);
+    throw err;
   } finally {
     client.release();
   }
