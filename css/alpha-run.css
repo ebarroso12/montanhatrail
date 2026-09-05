@@ -60,6 +60,22 @@
 .ar-spec-strip b{display:block;font-family:var(--ar-display);font-size:1.5rem;line-height:1}
 .ar-spec-strip span{font-family:var(--ar-mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ar-steel)}
 
+/* price + promo */
+.ar-price{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:22px}
+.ar-price-current{font-family:var(--ar-display);font-size:2.1rem;line-height:1;color:var(--ar-graphite)}
+.ar-price-original{font-family:var(--ar-mono);font-size:1rem;color:var(--ar-steel);text-decoration:line-through}
+.ar-price-promo{
+  font-family:var(--ar-mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;
+  font-weight:700;color:#fff;background:var(--ar-oxide);padding:5px 10px;
+}
+
+/* unavailable banner (shown only when the admin panel marks the product inactive) */
+.ar-unavailable-banner{
+  background:var(--ar-graphite);color:#fff;text-align:center;
+  font-family:var(--ar-mono);font-size:.78rem;letter-spacing:.03em;
+  padding:14px 20px;
+}
+
 /* colorway swatch selector */
 .ar-swatches{display:flex;gap:12px;margin-bottom:8px;flex-wrap:wrap}
 .ar-swatch{
