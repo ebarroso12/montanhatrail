@@ -15,6 +15,10 @@
 
 <a class="skip-link" href="#inicio">Pular para o conteúdo</a>
 
+<div class="promo-banner" id="promo-banner" hidden>
+  <p id="promo-banner-text"></p>
+</div>
+
 <header class="site-header" id="topo">
   <div class="wrap header-inner">
     <a class="brand" href="#inicio">
@@ -28,7 +32,7 @@
       <a href="#tamanhos">Tamanhos</a>
       <a href="#galeria">Galeria</a>
     </nav>
-    <a class="btn btn-ghost btn-sm" target="_blank" rel="noopener" href="https://shopee.com.br/product/1778701049/22499680145/">Comprar na Shopee ↗</a>
+    <a class="btn btn-ghost btn-sm" target="_blank" rel="noopener" data-link="shopee" data-track-label="header-shopee" href="https://shopee.com.br/product/1778701049/22499680145/">Comprar na Shopee ↗</a>
     <button class="nav-toggle" aria-label="Abrir menu" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
@@ -41,12 +45,12 @@
   <section class="hero" style="--bg:url('/images/hero-produto-cachoeira.jpg')">
     <div class="hero-scrim"></div>
     <div class="wrap hero-inner">
-      <p class="eyebrow eyebrow-light"><span class="rule"></span>Para quem escolhe o caminho</p>
-      <h1>Onde a terra chama,<br><em>você vai.</em></h1>
-      <p class="lead">Um tênis Adventure para acompanhar o ritmo de trilhas e caminhadas — com conforto e solado antiderrapante para você seguir em frente.</p>
+      <p class="eyebrow eyebrow-light"><span class="rule"></span><span id="hero-eyebrow">Para quem escolhe o caminho</span></p>
+      <h1><span id="hero-title-line1">Onde a terra chama,</span><br><em id="hero-title-line2">você vai.</em></h1>
+      <p class="lead" id="hero-subtitle">Um tênis Adventure para acompanhar o ritmo de trilhas e caminhadas — com conforto e solado antiderrapante para você seguir em frente.</p>
       <div class="cta-row">
-        <a class="btn btn-primary" target="_blank" rel="noopener" href="https://shopee.com.br/product/1778701049/22499680145/">Ver na Shopee ↗</a>
-        <a class="btn btn-outline-light" target="_blank" rel="noopener" href="https://produto.mercadolivre.com.br/MLB-6522616368-tnis-adventure-trilha-caminhada-antiderrapante-confortavel-_JM">Mercado Livre ↗</a>
+        <a class="btn btn-primary" target="_blank" rel="noopener" data-link="shopee" data-track-label="hero-shopee" href="https://shopee.com.br/product/1778701049/22499680145/">Ver na Shopee ↗</a>
+        <a class="btn btn-outline-light" target="_blank" rel="noopener" data-link="mercadolivre" data-track-label="hero-mercadolivre" href="https://produto.mercadolivre.com.br/MLB-6522616368-tnis-adventure-trilha-caminhada-antiderrapante-confortavel-_JM">Mercado Livre ↗</a>
       </div>
     </div>
   </section>
@@ -127,8 +131,8 @@
         </ul>
 
         <div class="cta-row">
-          <a class="btn btn-dark" target="_blank" rel="noopener" href="https://shopee.com.br/product/1778701049/22499680145/">Comprar na Shopee ↗</a>
-          <a class="btn btn-outline-dark" target="_blank" rel="noopener" href="https://produto.mercadolivre.com.br/MLB-6522616368-tnis-adventure-trilha-caminhada-antiderrapante-confortavel-_JM">Ver no Mercado Livre ↗</a>
+          <a class="btn btn-dark" target="_blank" rel="noopener" data-link="shopee" data-track-label="atributos-shopee" href="https://shopee.com.br/product/1778701049/22499680145/">Comprar na Shopee ↗</a>
+          <a class="btn btn-outline-dark" target="_blank" rel="noopener" data-link="mercadolivre" data-track-label="atributos-mercadolivre" href="https://produto.mercadolivre.com.br/MLB-6522616368-tnis-adventure-trilha-caminhada-antiderrapante-confortavel-_JM">Ver no Mercado Livre ↗</a>
         </div>
       </div>
     </div>
@@ -182,7 +186,7 @@
           <!-- filled by JS -->
         </div>
 
-        <a class="text-link" target="_blank" rel="noopener" href="https://shopee.com.br/product/1778701049/22499680145/">Conferir tamanhos na Shopee →</a>
+        <a class="text-link" target="_blank" rel="noopener" data-link="shopee" data-track-label="tamanhos-shopee" href="https://shopee.com.br/product/1778701049/22499680145/">Conferir tamanhos na Shopee →</a>
       </div>
     </div>
   </section>
@@ -220,6 +224,40 @@
     </div>
   </section>
 
+  <!-- 06 FIQUE POR DENTRO (captura de leads) -->
+  <section class="section section-cream" id="fique-por-dentro">
+    <div class="wrap two-col align-start">
+      <div class="col-content">
+        <p class="eyebrow">06 · Fique por dentro</p>
+        <h2>Quer saber em<br><em>primeira mão?</em></h2>
+        <p class="body-text">Deixe seu e-mail para receber avisos de lançamentos e promoções do Adventure Trail. Sem spam — só o essencial.</p>
+      </div>
+      <div class="size-card">
+        <p class="eyebrow"><span class="rule"></span>Avise-me</p>
+        <h3>Receber novidades</h3>
+
+        <div class="admin-msg admin-msg-success" id="lead-success" hidden>Pronto! Você vai receber nossas novidades em breve.</div>
+        <div class="admin-msg admin-msg-error" id="lead-error" hidden></div>
+
+        <form id="lead-form" novalidate>
+          <label class="field-label" for="lead-name">Nome (opcional)</label>
+          <div class="field-row"><input type="text" id="lead-name" name="name" autocomplete="name"></div>
+
+          <label class="field-label" for="lead-email" style="margin-top:14px;display:block">E-mail</label>
+          <div class="field-row"><input type="email" id="lead-email" name="email" autocomplete="email" required></div>
+
+          <!-- honeypot: hidden from real people, only bots tend to fill this in -->
+          <div style="position:absolute;left:-9999px" aria-hidden="true">
+            <label for="lead-website">Não preencha este campo</label>
+            <input type="text" id="lead-website" name="website" tabindex="-1" autocomplete="off">
+          </div>
+
+          <button type="submit" class="btn btn-dark" id="lead-submit" style="margin-top:16px;width:100%">Quero receber novidades</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
   <!-- CTA BANNER -->
   <section class="section cta-banner" style="--bg:url('/images/hero-produto-cachoeira.jpg')">
     <div class="hero-scrim"></div>
@@ -228,8 +266,8 @@
       <h2 class="light">A paisagem muda.<br><em>O seu passo continua.</em></h2>
       <p class="body-text light-soft">Encontre o seu Tênis Adventure e escolha o próximo caminho.</p>
       <div class="cta-row">
-        <a class="btn btn-primary" target="_blank" rel="noopener" href="https://shopee.com.br/product/1778701049/22499680145/">Comprar na Shopee ↗</a>
-        <a class="btn btn-outline-light" target="_blank" rel="noopener" href="https://produto.mercadolivre.com.br/MLB-6522616368-tnis-adventure-trilha-caminhada-antiderrapante-confortavel-_JM">Mercado Livre ↗</a>
+        <a class="btn btn-primary" target="_blank" rel="noopener" data-link="shopee" data-track-label="cta-final-shopee" href="https://shopee.com.br/product/1778701049/22499680145/">Comprar na Shopee ↗</a>
+        <a class="btn btn-outline-light" target="_blank" rel="noopener" data-link="mercadolivre" data-track-label="cta-final-mercadolivre" href="https://produto.mercadolivre.com.br/MLB-6522616368-tnis-adventure-trilha-caminhada-antiderrapante-confortavel-_JM">Mercado Livre ↗</a>
       </div>
     </div>
   </section>
@@ -241,8 +279,8 @@
     <span class="brand brand-footer">ADVENTURE<b>TRAIL</b></span>
     <p>Para quem encontra sentido no lado de fora.</p>
     <div class="cta-row">
-      <a class="btn btn-primary btn-sm" target="_blank" rel="noopener" href="https://shopee.com.br/product/1778701049/22499680145/">Comprar na Shopee ↗</a>
-      <a class="btn btn-outline-dark btn-sm" target="_blank" rel="noopener" href="https://produto.mercadolivre.com.br/MLB-6522616368-tnis-adventure-trilha-caminhada-antiderrapante-confortavel-_JM">Mercado Livre ↗</a>
+      <a class="btn btn-primary btn-sm" target="_blank" rel="noopener" data-link="shopee" data-track-label="footer-shopee" href="https://shopee.com.br/product/1778701049/22499680145/">Comprar na Shopee ↗</a>
+      <a class="btn btn-outline-dark btn-sm" target="_blank" rel="noopener" data-link="mercadolivre" data-track-label="footer-mercadolivre" href="https://produto.mercadolivre.com.br/MLB-6522616368-tnis-adventure-trilha-caminhada-antiderrapante-confortavel-_JM">Mercado Livre ↗</a>
     </div>
   </div>
 
