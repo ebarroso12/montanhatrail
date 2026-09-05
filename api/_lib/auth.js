@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { getSupabase } = require('./supabase');
+const db = require('./db');
 
 const SESSION_COOKIE = 'at_session';
 const SESSION_TTL_HOURS = 8;
@@ -49,22 +49,26 @@ async function getSessionAdmin(req) {
   const token = cookies[SESSION_COOKIE];
   if (!token) return null;
 
-  const supabase = getSupabase();
-  const { data, error } = await supabase
-    .from('admin_sessions')
-    .select('admin_id, expires_at')
-    .eq('token', token)
-    .maybeSingle();
-
-  if (error || !data) return null;
-
-  if (new Date(data.expires_at).getTime() < Date.now()) {
-    // Expired — clean it up lazily.
-    await supabase.from('admin_sessions').delete().eq('token', token);
+  let result;
+  try {
+    result = await db.query(
+      'SELECT admin_id, expires_at FROM admin_sessions WHERE token = $1',
+      [token]
+    );
+  } catch (err) {
     return null;
   }
 
-  return data.admin_id;
+  const row = result.rows[0];
+  if (!row) return null;
+
+  if (new Date(row.expires_at).getTime() < Date.now()) {
+    // Expired — clean it up lazily.
+    await db.query('DELETE FROM admin_sessions WHERE token = $1', [token]);
+    return null;
+  }
+
+  return row.admin_id;
 }
 
 /** Writes a 401 and returns null if there's no valid session; otherwise returns the admin_id. */
