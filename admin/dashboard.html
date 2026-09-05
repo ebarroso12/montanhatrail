@@ -105,6 +105,28 @@
           </div>
         </form>
       </div>
+
+      <div class="admin-card">
+        <h2>Alpha Run — links de compra</h2>
+        <p class="hint">Enquanto estes links não forem preenchidos, os botões de compra da página /alpha-run.html levam para a captura de e-mail ("avise-me"), nunca para um link inventado.</p>
+
+        <div class="admin-msg admin-msg-success" id="content-alpha-success" hidden>Salvo com sucesso.</div>
+        <div class="admin-msg admin-msg-error" id="content-alpha-error" hidden></div>
+
+        <form id="content-alpha-form">
+          <div class="admin-field">
+            <label for="alpha_run_shopee_url">Link da Shopee (Alpha Run)</label>
+            <input type="url" id="alpha_run_shopee_url" name="alpha_run_shopee_url" placeholder="https://shopee.com.br/...">
+          </div>
+          <div class="admin-field">
+            <label for="alpha_run_mercadolivre_url">Link do Mercado Livre (Alpha Run)</label>
+            <input type="url" id="alpha_run_mercadolivre_url" name="alpha_run_mercadolivre_url" placeholder="https://produto.mercadolivre.com.br/...">
+          </div>
+          <div class="admin-form-actions">
+            <button type="submit" class="admin-btn admin-btn-primary" id="content-alpha-submit">Salvar alterações</button>
+          </div>
+        </form>
+      </div>
     </section>
 
     <!-- SECURITY -->

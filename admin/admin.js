@@ -31,6 +31,7 @@
     loadLeads();
     loadClicks();
     setupContentForm();
+    setupAlphaContentForm();
     setupPasswordForm();
   }
 
@@ -93,7 +94,14 @@
     'cta-final-shopee': 'Chamada final — Shopee',
     'cta-final-mercadolivre': 'Chamada final — Mercado Livre',
     'footer-shopee': 'Rodapé — Shopee',
-    'footer-mercadolivre': 'Rodapé — Mercado Livre'
+    'footer-mercadolivre': 'Rodapé — Mercado Livre',
+    'alpha-hero-shopee': 'Alpha Run · Topo — Shopee',
+    'alpha-hero-mercadolivre': 'Alpha Run · Topo — Mercado Livre',
+    'alpha-cta-shopee': 'Alpha Run · Chamada final — Shopee',
+    'alpha-cta-mercadolivre': 'Alpha Run · Chamada final — Mercado Livre',
+    'alpha-footer-shopee': 'Alpha Run · Rodapé — Shopee',
+    'alpha-footer-mercadolivre': 'Alpha Run · Rodapé — Mercado Livre',
+    'alpha-lineup-color': 'Alpha Run · Troca de cor'
   };
 
   function loadClicks(){
@@ -152,6 +160,50 @@
         mercadolivre_url: form.elements.mercadolivre_url.value,
         promo_banner_enabled: form.elements.promo_banner_enabled.checked ? 'true' : 'false',
         promo_banner_text: form.elements.promo_banner_text.value
+      };
+
+      fetch('/api/admin/content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: payload })
+      }).then(function(r){ return r.json().then(function(data){ return { status: r.status, data: data }; }); })
+        .then(function(res){
+          if (res.status === 200 && res.data.ok) {
+            successBox.hidden = false;
+          } else {
+            errorBox.textContent = res.data.message || 'Não foi possível salvar.';
+            errorBox.hidden = false;
+          }
+        }).catch(function(){
+          errorBox.textContent = 'Erro de conexão.';
+          errorBox.hidden = false;
+        });
+    });
+  }
+
+  function setupAlphaContentForm(){
+    var form = document.getElementById('content-alpha-form');
+    if (!form) return;
+    var successBox = document.getElementById('content-alpha-success');
+    var errorBox = document.getElementById('content-alpha-error');
+
+    fetch('/api/admin/content').then(function(r){ return r.json(); }).then(function(data){
+      var content = data.content || {};
+      Object.keys(content).forEach(function(key){
+        var el = form.elements[key];
+        if (!el) return;
+        el.value = content[key];
+      });
+    }).catch(function(){});
+
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      successBox.hidden = true;
+      errorBox.hidden = true;
+
+      var payload = {
+        alpha_run_shopee_url: form.elements.alpha_run_shopee_url.value,
+        alpha_run_mercadolivre_url: form.elements.alpha_run_mercadolivre_url.value
       };
 
       fetch('/api/admin/content', {
