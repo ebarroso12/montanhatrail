@@ -16,6 +16,11 @@ const EDITABLE_KEYS = new Set([
   'promo_banner_text',
   'alpha_run_shopee_url',
   'alpha_run_mercadolivre_url',
+  'alpha_run_price_current',
+  'alpha_run_price_original',
+  'alpha_run_promo_enabled',
+  'alpha_run_promo_label',
+  'alpha_run_active',
 ]);
 
 module.exports = async (req, res) => {
