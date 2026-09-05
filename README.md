@@ -49,20 +49,17 @@ O painel tem 4 abas:
 
 ### Variáveis de ambiente necessárias na Vercel
 
-No projeto da Vercel (Settings → Environment Variables), definir:
+No projeto da Vercel (Settings → Environment Variables), definir (conexão via pooler Supavisor em modo transação — a conexão direta é só IPv6 e não é alcançável pelas funções serverless da Vercel):
 
 ```
-PGHOST=db.eogykziuhsblzulqvika.supabase.co
+PGHOST=aws-0-sa-east-1.pooler.supabase.com
+PGPORT=6543
+PGUSER=app_service.eogykziuhsblzulqvika
 PGPASSWORD=<senha da role app_service — nunca commitar no git>
-```
-
-Opcional (já têm esses valores como padrão no código, só precisam ser definidos se algo mudar):
-
-```
-PGUSER=app_service
 PGDATABASE=postgres
-PGPORT=5432
 ```
+
+O usuário do pooler sempre segue o formato `nome_da_role.referencia_do_projeto` (o Supavisor usa esse sufixo para rotear pra o projeto certo).
 
 Sem essas variáveis, o site público continua funcionando normalmente (só o formulário de leads, o rastreio de cliques e o painel ficam inativos) — é um "progressive enhancement", nunca um requisito para a página carregar.
 
