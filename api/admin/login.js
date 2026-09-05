@@ -72,6 +72,7 @@ module.exports = async (req, res) => {
     setSessionCookie(res, token, SESSION_TTL_HOURS * 60 * 60);
     res.status(200).json({ ok: true });
   } catch (err) {
+    console.error('[admin/login] erro:', err);
     res.status(500).json({ error: 'server_error', message: 'Erro ao autenticar. Tente novamente.' });
   }
 };
