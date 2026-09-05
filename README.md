@@ -12,7 +12,7 @@ css/style.css   → design tokens, layout e responsividade
 js/main.js      → calculadora de tamanho, toggle trilha/caminhada, lightbox, rastreio de cliques, formulário de leads, overrides de conteúdo
 admin/          → páginas do painel administrativo (login + dashboard)
 api/            → funções serverless (Node.js) que atendem o site público e o painel
-package.json    → dependências das funções serverless (@supabase/supabase-js, bcryptjs)
+package.json    → dependências das funções serverless (pg, bcryptjs)
 ```
 
 ## O que já está implementado no site público
@@ -41,7 +41,7 @@ O painel tem 4 abas:
 ### Arquitetura e decisões de segurança
 
 - **Banco de dados**: projeto Supabase dedicado (`adventure-trail`, região `sa-east-1`), criado exclusivamente para este site — nenhuma tabela é compartilhada com outros projetos.
-- **RLS (Row Level Security)** ativado em todas as tabelas, sem nenhuma política para os papéis públicos (`anon`/`authenticated`). Isso significa que a chave pública do Supabase não consegue ler nem escrever nada — todo acesso passa exclusivamente pelas funções serverless em `/api`, que usam a chave secreta (`service_role`), guardada apenas nas variáveis de ambiente da Vercel e nunca exposta ao navegador.
+- **RLS (Row Level Security)** ativado em todas as tabelas, sem nenhuma política para os papéis públicos (`anon`/`authenticated`). Isso significa que ninguém consegue ler nem escrever nada direto do navegador — todo acesso passa exclusivamente pelas funções serverless em `/api`, que se conectam ao Postgres do projeto usando uma role dedicada (`app_service`, com `BYPASSRLS` e permissões apenas nas tabelas deste app), cuja senha é guardada só nas variáveis de ambiente da Vercel e nunca exposta ao navegador.
 - **Login**: senha guardada com hash `bcrypt` (nunca em texto puro). Sessão de administrador via cookie `HttpOnly` + `Secure` + `SameSite=Lax`, token aleatório opaco (não é um JWT, então uma sessão pode ser revogada instantaneamente apagando a linha no banco).
 - **Proteção contra força bruta**: após 5 tentativas de login incorretas para o mesmo e-mail em 15 minutos, novas tentativas são bloqueadas temporariamente.
 - **Captura de leads**: endpoint público, mas com validação de e-mail e um campo-armadilha (honeypot) invisível para descartar envios automatizados simples.
@@ -52,8 +52,16 @@ O painel tem 4 abas:
 No projeto da Vercel (Settings → Environment Variables), definir:
 
 ```
-SUPABASE_URL=https://eogykziuhsblzulqvika.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=<chave secreta "service_role" do projeto Supabase — nunca commitar no git>
+PGHOST=db.eogykziuhsblzulqvika.supabase.co
+PGPASSWORD=<senha da role app_service — nunca commitar no git>
+```
+
+Opcional (já têm esses valores como padrão no código, só precisam ser definidos se algo mudar):
+
+```
+PGUSER=app_service
+PGDATABASE=postgres
+PGPORT=5432
 ```
 
 Sem essas variáveis, o site público continua funcionando normalmente (só o formulário de leads, o rastreio de cliques e o painel ficam inativos) — é um "progressive enhancement", nunca um requisito para a página carregar.

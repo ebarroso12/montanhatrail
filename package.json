@@ -2,9 +2,9 @@
   "name": "montanha-trail",
   "version": "1.0.0",
   "private": true,
-  "description": "Adventure Trail — landing page estática + painel administrativo (Vercel Functions + Supabase).",
+  "description": "Adventure Trail — landing page estática + painel administrativo (Vercel Functions + Postgres/Supabase).",
   "dependencies": {
-    "@supabase/supabase-js": "^2.45.4",
+    "pg": "^8.13.1",
     "bcryptjs": "^2.4.3"
   }
 }
