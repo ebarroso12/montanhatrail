@@ -1,4 +1,4 @@
-const { getSupabase } = require('../_lib/supabase');
+const db = require('../_lib/db');
 const { parseCookies, clearSessionCookie, SESSION_COOKIE } = require('../_lib/auth');
 
 module.exports = async (req, res) => {
@@ -12,7 +12,7 @@ module.exports = async (req, res) => {
 
   if (token) {
     try {
-      await getSupabase().from('admin_sessions').delete().eq('token', token);
+      await db.query('DELETE FROM admin_sessions WHERE token = $1', [token]);
     } catch (err) {
       // Even if this fails, still clear the cookie client-side below.
     }

@@ -1,4 +1,4 @@
-const { getSupabase } = require('../_lib/supabase');
+const db = require('../_lib/db');
 const { parseBody } = require('../_lib/body');
 const { requireAdmin } = require('../_lib/auth');
 
@@ -17,17 +17,14 @@ const EDITABLE_KEYS = new Set([
 ]);
 
 module.exports = async (req, res) => {
-  const supabase = getSupabase();
-
   if (req.method === 'GET') {
     // Public on purpose: the landing page's own script calls this on load
     // to apply any admin-edited overrides. Only ever exposes the
     // non-sensitive marketing fields above — nothing from leads/clicks/auth.
     try {
-      const { data, error } = await supabase.from('site_content').select('key, value');
-      if (error) throw error;
+      const result = await db.query('SELECT key, value FROM site_content');
       const map = {};
-      (data || []).forEach((row) => {
+      (result.rows || []).forEach((row) => {
         map[row.key] = row.value;
       });
       res.status(200).json({ content: map });
@@ -50,7 +47,6 @@ module.exports = async (req, res) => {
       .map(([key, value]) => ({
         key,
         value: String(value ?? '').slice(0, 2000),
-        updated_at: new Date().toISOString(),
       }));
 
     if (!rows.length) {
@@ -59,8 +55,14 @@ module.exports = async (req, res) => {
     }
 
     try {
-      const { error } = await supabase.from('site_content').upsert(rows, { onConflict: 'key' });
-      if (error) throw error;
+      for (const row of rows) {
+        await db.query(
+          `INSERT INTO site_content (key, value, updated_at)
+           VALUES ($1, $2, NOW())
+           ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = EXCLUDED.updated_at`,
+          [row.key, row.value]
+        );
+      }
       res.status(200).json({ ok: true });
     } catch (err) {
       res.status(500).json({ error: 'server_error' });

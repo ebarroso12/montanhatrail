@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const { getSupabase } = require('../_lib/supabase');
+const db = require('../_lib/db');
 const { parseBody } = require('../_lib/body');
 const {
   setSessionCookie,
@@ -27,19 +27,16 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const supabase = getSupabase();
-
     // Brute-force guard: block after too many recent failed attempts for
     // this e-mail, regardless of which password is being tried.
     const windowStart = new Date(Date.now() - LOCKOUT_WINDOW_MINUTES * 60 * 1000).toISOString();
-    const { count } = await supabase
-      .from('login_attempts')
-      .select('id', { count: 'exact', head: true })
-      .eq('email', email)
-      .eq('success', false)
-      .gte('created_at', windowStart);
+    const countResult = await db.query(
+      'SELECT COUNT(*)::int AS count FROM login_attempts WHERE email = $1 AND success = false AND created_at >= $2',
+      [email, windowStart]
+    );
+    const count = countResult.rows[0] ? countResult.rows[0].count : 0;
 
-    if ((count || 0) >= MAX_FAILED_ATTEMPTS) {
+    if (count >= MAX_FAILED_ATTEMPTS) {
       res.status(429).json({
         error: 'too_many_attempts',
         message: `Muitas tentativas de login. Tente novamente em ${LOCKOUT_WINDOW_MINUTES} minutos.`,
@@ -47,15 +44,18 @@ module.exports = async (req, res) => {
       return;
     }
 
-    const { data: admin } = await supabase
-      .from('admin_users')
-      .select('id, password_hash')
-      .eq('email', email)
-      .maybeSingle();
+    const adminResult = await db.query(
+      'SELECT id, password_hash FROM admin_users WHERE email = $1',
+      [email]
+    );
+    const admin = adminResult.rows[0] || null;
 
     const valid = admin ? await bcrypt.compare(password, admin.password_hash) : false;
 
-    await supabase.from('login_attempts').insert({ email, ip, success: valid });
+    await db.query(
+      'INSERT INTO login_attempts (email, ip, success) VALUES ($1, $2, $3)',
+      [email, ip, valid]
+    );
 
     if (!valid) {
       res.status(401).json({ error: 'invalid_credentials', message: 'E-mail ou senha incorretos.' });
@@ -64,7 +64,10 @@ module.exports = async (req, res) => {
 
     const token = generateToken();
     const expiresAt = new Date(Date.now() + SESSION_TTL_HOURS * 60 * 60 * 1000).toISOString();
-    await supabase.from('admin_sessions').insert({ token, admin_id: admin.id, expires_at: expiresAt });
+    await db.query(
+      'INSERT INTO admin_sessions (token, admin_id, expires_at) VALUES ($1, $2, $3)',
+      [token, admin.id, expiresAt]
+    );
 
     setSessionCookie(res, token, SESSION_TTL_HOURS * 60 * 60);
     res.status(200).json({ ok: true });

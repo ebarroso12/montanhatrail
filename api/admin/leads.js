@@ -1,4 +1,4 @@
-const { getSupabase } = require('../_lib/supabase');
+const db = require('../_lib/db');
 const { requireAdmin } = require('../_lib/auth');
 
 /** Protected: lists the most recent leads for the admin dashboard. */
@@ -12,16 +12,11 @@ module.exports = async (req, res) => {
   if (!adminId) return;
 
   try {
-    const supabase = getSupabase();
-    const { data, error } = await supabase
-      .from('leads')
-      .select('id, name, email, phone, message, source, created_at')
-      .order('created_at', { ascending: false })
-      .limit(500);
+    const result = await db.query(
+      'SELECT id, name, email, phone, message, source, created_at FROM leads ORDER BY created_at DESC LIMIT 500'
+    );
 
-    if (error) throw error;
-
-    res.status(200).json({ leads: data || [] });
+    res.status(200).json({ leads: result.rows || [] });
   } catch (err) {
     res.status(500).json({ error: 'server_error' });
   }
