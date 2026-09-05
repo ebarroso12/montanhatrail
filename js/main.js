@@ -292,6 +292,14 @@
         });
       }
 
+      // Alpha Run retirado do ar pelo painel: some da home sem quebrar links.
+      if (content.alpha_run_active === "false") {
+        ["nav-alpha-run", "alpha-teaser-section", "footer-alpha-run"].forEach(function (id) {
+          var el = document.getElementById(id);
+          if (el) el.hidden = true;
+        });
+      }
+
       if (content.promo_banner_enabled === "true" && content.promo_banner_text) {
         var banner = document.getElementById("promo-banner");
         var bannerText = document.getElementById("promo-banner-text");
