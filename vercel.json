@@ -1,0 +1,37 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    { "source": "/index.html", "destination": "/", "permanent": true },
+    { "source": "/alpha-run.html", "destination": "/produto/tenis-alpha-run", "permanent": true },
+    { "source": "/admin/index.html", "destination": "/admin/login", "permanent": false },
+    { "source": "/admin/dashboard.html", "destination": "/admin", "permanent": false }
+  ],
+  "rewrites": [
+    { "source": "/", "destination": "/api/site?page=home" },
+    { "source": "/catalogo", "destination": "/api/site?page=catalogo" },
+    { "source": "/categoria/:slug", "destination": "/api/site?page=categoria&slug=:slug" },
+    { "source": "/produto/:slug", "destination": "/api/site?page=produto&slug=:slug" },
+    { "source": "/sitemap.xml", "destination": "/api/site?page=sitemap" },
+    { "source": "/robots.txt", "destination": "/api/site?page=robots" },
+    { "source": "/admin", "destination": "/api/site?page=admin" },
+    { "source": "/admin/login", "destination": "/api/site?page=admin-login" },
+    { "source": "/api/leads", "destination": "/api/public?route=leads" },
+    { "source": "/api/track-click", "destination": "/api/public?route=track-click" },
+    { "source": "/api/admin/:route", "destination": "/api/admin?route=:route" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
+      ]
+    },
+    {
+      "source": "/admin(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    }
+  ]
+}

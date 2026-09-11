@@ -1,74 +1,118 @@
-# Adventure Trail — Landing Page + Painel Administrativo
+# Alpins — Catálogo de produtos + Painel administrativo
 
-Landing page de vendas do tênis **Adventure Trail** (trilhas e caminhadas), recriada a partir do projeto original feito no Manus (que ficou sem créditos) para poder continuar a evolução no GitHub + Vercel. Agora inclui um painel administrativo real (login, captura de leads, contagem de cliques e edição de conteúdo).
+Catálogo da **Alpins** com produtos de várias categorias. Cada produto leva o visitante para a página correspondente na **Shopee** e/ou no **Mercado Livre**. Um painel administrativo protegido permite cadastrar produtos e categorias sem editar código.
+
+Contato exibido no site: WhatsApp **(16) 99127-1838**.
 
 ## Stack
 
-Site estático (HTML + CSS + JS vanilla, sem build step) + funções serverless na Vercel (`/api`) + banco de dados Supabase (Postgres).
+Sem build step e com só duas dependências (`pg`, `bcryptjs`):
+
+- **Páginas públicas** renderizadas no servidor por funções da Vercel (HTML + CSS + um pouco de JS vanilla). Cada produto tem HTML e meta tags próprios para SEO, e a CDN guarda as páginas por 60 s.
+- **Banco**: Supabase Postgres, acessado só pelas funções (role `app_service`).
+- **Imagens**: Supabase Storage (bucket público `products`). O banco guarda só a URL.
+- **Autenticação**: própria (bcrypt + sessão em cookie `HttpOnly`), a mesma do projeto anterior.
 
 ```
-index.html      → estrutura da página pública (todas as seções)
-css/style.css   → design tokens, layout e responsividade
-js/main.js      → calculadora de tamanho, toggle trilha/caminhada, lightbox, rastreio de cliques, formulário de leads, overrides de conteúdo
-admin/          → páginas do painel administrativo (login + dashboard)
-api/            → funções serverless (Node.js) que atendem o site público e o painel
-package.json    → dependências das funções serverless (pg, bcryptjs)
+api/site.js            → páginas: /, /catalogo, /categoria/:slug, /produto/:slug, /sitemap.xml, /robots.txt, /admin, /admin/login
+api/public.js          → /api/leads e /api/track-click
+api/admin.js           → /api/admin/* (login, produtos, categorias, upload, leads, cliques, conteúdo, senha)
+api/_lib/              → código compartilhado (não vira função)
+  site.js              → identidade da marca: nome, telefone, link do WhatsApp, logo, parceiro
+  catalog.js           → consultas públicas do catálogo
+  validate.js          → validação de entrada (inclui domínios aceitos de Shopee e Mercado Livre)
+  storage.js           → upload/remoção de imagens no Supabase Storage
+  views/               → HTML das páginas públicas e do painel
+  handlers/            → lógica de cada endpoint
+css/style.css          → site público      css/admin.css → painel
+js/main.js             → menu, galeria, rastreio de cliques, formulário
+js/admin.js            → painel           js/admin-login.js → tela de login
+migrations/            → SQL do banco (rodar no SQL Editor do Supabase)
+vercel.json            → rotas, redirects e headers de segurança
 ```
 
-## O que já está implementado no site público
+As rotas ficam agrupadas em 3 funções para respeitar o limite de funções por deploy do plano Hobby da Vercel.
 
-- Hero com CTA para Shopee e Mercado Livre
-- Seção "Essência" e "Seu caminho" (toggle Trilha/Caminhada)
-- Atributos do produto (Conforto, Solado antiderrapante, Trilhas e caminhadas)
-- Guia de tamanhos com calculadora interativa
-- Galeria com lightbox (ampliar foto)
-- Formulário "Fique por dentro" (captura de leads — nome opcional + e-mail)
-- Rastreamento de clique em todos os botões de Shopee/Mercado Livre
-- Faixa de promoção opcional no topo (liga/desliga pelo painel)
-- Rodapé com o parceiro Selah (selaah.com.br), assinatura do desenvolvedor (Dr. Edson Barroso) e dados institucionais da New Story Footwear
+## Modelo de dados
+
+**categories**: `id`, `name`, `slug` (único), `description`, `active`, `sort_order`, `created_at`, `updated_at`.
+
+**products**: `id`, `name`, `slug` (único), `short_description`, `description`, `category_id`, `main_image_url`, `gallery_urls` (até 12), `price`, `sale_price`, `shopee_url`, `mercadolivre_url`, `featured`, `active`, `sort_order`, `created_at`, `updated_at`.
+
+- Os links de Shopee e Mercado Livre são **independentes**: o produto pode ter um, os dois ou nenhum. O botão só aparece quando o link existe.
+- `sale_price` precisa ser menor que `price`; quando existe, o site mostra o selo de promoção.
+- Uma categoria com produtos **não pode ser excluída** (proteção no banco e na API).
+- Para adicionar outro marketplace no futuro: nova coluna em `products` + entrada em `MARKETPLACES` (`api/_lib/validate.js`) + rótulo do botão (`api/_lib/views/components.js`).
 
 ## Painel administrativo (`/admin`)
 
-Acesse `https://<seu-domínio>/admin/index.html` e entre com o e-mail `edson.barroso@gmail.com` e a senha inicial (gerada uma única vez e enviada por fora do código-fonte — **troque-a assim que entrar**, na aba "Segurança" do painel).
+O HTML do painel só é entregue para uma sessão válida; sem login, `/admin` redireciona para `/admin/login`.
 
-O painel tem 4 abas:
+Abas:
 
-- **Leads** — lista de e-mails capturados pelo formulário "Fique por dentro" do site.
-- **Cliques** — total de cliques em cada botão de Shopee/Mercado Livre, com o recorte dos últimos 7 dias.
-- **Conteúdo** — permite editar o texto do hero (selo, título, subtítulo), os links de Shopee/Mercado Livre e a faixa de promoção, sem tocar em código. As mudanças aparecem no site em poucos segundos.
-- **Segurança** — trocar a senha de acesso.
+- **Painel**: números do catálogo.
+- **Produtos**: busca, filtros, criar, editar, ativar/desativar, destacar, excluir com confirmação e visualizar antes de publicar. Produtos novos começam inativos.
+- **Categorias**: criar, editar, ordenar, ativar/desativar, excluir com confirmação digitada.
+- **Leads**: e-mails do formulário "Seja um alpinista".
+- **Cliques**: cliques por produto e marketplace.
+- **Conteúdo**: textos do topo da home e faixa de promoção.
+- **Segurança**: troca de senha.
 
-### Arquitetura e decisões de segurança
+## Segurança
 
-- **Banco de dados**: projeto Supabase dedicado (`adventure-trail`, região `sa-east-1`), criado exclusivamente para este site — nenhuma tabela é compartilhada com outros projetos.
-- **RLS (Row Level Security)** ativado em todas as tabelas, sem nenhuma política para os papéis públicos (`anon`/`authenticated`). Isso significa que ninguém consegue ler nem escrever nada direto do navegador — todo acesso passa exclusivamente pelas funções serverless em `/api`, que se conectam ao Postgres do projeto usando uma role dedicada (`app_service`, com `BYPASSRLS` e permissões apenas nas tabelas deste app), cuja senha é guardada só nas variáveis de ambiente da Vercel e nunca exposta ao navegador.
-- **Login**: senha guardada com hash `bcrypt` (nunca em texto puro). Sessão de administrador via cookie `HttpOnly` + `Secure` + `SameSite=Lax`, token aleatório opaco (não é um JWT, então uma sessão pode ser revogada instantaneamente apagando a linha no banco).
-- **Proteção contra força bruta**: após 5 tentativas de login incorretas para o mesmo e-mail em 15 minutos, novas tentativas são bloqueadas temporariamente.
-- **Captura de leads**: endpoint público, mas com validação de e-mail e um campo-armadilha (honeypot) invisível para descartar envios automatizados simples.
-- **Conteúdo editável**: lista fechada de campos (`hero_eyebrow`, `hero_title_line1`, `hero_title_line2`, `hero_subtitle`, `shopee_url`, `mercadolivre_url`, `promo_banner_enabled`, `promo_banner_text`) — o painel nunca pode gravar nada fora dessa lista.
+- RLS ligado em todas as tabelas, sem políticas para `anon`/`authenticated`. O navegador nunca acessa o banco direto.
+- Senha com hash bcrypt, sessão com cookie `HttpOnly` + `Secure` + `SameSite=Lax`, bloqueio após 5 tentativas erradas em 15 min.
+- Operações de escrita do painel exigem sessão válida, corpo JSON e origem igual à do site (proteção contra CSRF).
+- Validação no servidor de todos os campos. Os links de compra só aceitam `https` e os domínios oficiais: `shopee.com.br`, `shope.ee`, `shp.ee`, `mercadolivre.com.br`, `mercadolivre.com`, `meli.la`.
+- Upload: o tipo real do arquivo é conferido pelos bytes (JPG, PNG ou WebP, até 3 MB). A service key do Supabase só existe no servidor.
+- Content-Security-Policy sem scripts inline; links comerciais com `rel="noopener noreferrer sponsored"`.
 
-### Variáveis de ambiente necessárias na Vercel
+## Variáveis de ambiente (Vercel → Settings → Environment Variables)
 
-No projeto da Vercel (Settings → Environment Variables), definir (conexão via pooler Supavisor em modo transação — a conexão direta é só IPv6 e não é alcançável pelas funções serverless da Vercel):
+Veja `.env.example`. Nunca commitar valores.
+
+| Variável | Uso |
+|---|---|
+| `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE` | Postgres via pooler Supavisor (modo transação, porta 6543). O usuário segue o formato `app_service.<ref_do_projeto>`. |
+| `SUPABASE_URL` | URL do projeto Supabase (upload de imagens). |
+| `SUPABASE_SERVICE_ROLE_KEY` | Chave secreta do Supabase (legacy `service_role` ou `sb_secret_…`). **Somente servidor.** |
+| `SUPABASE_STORAGE_BUCKET` | Opcional, padrão `products`. |
+| `SITE_URL` | Opcional: URL canônica (ex.: domínio próprio). |
+
+Sem as variáveis do Supabase Storage, o painel continua funcionando com URLs de imagens coladas manualmente.
+
+## Publicação (ordem recomendada)
+
+1. No Supabase (SQL Editor), rodar `migrations/001_catalog.sql` e depois `migrations/002_seed_alpins.sql`.
+   - A 001 cria as tabelas, as permissões da role `app_service` e o bucket `products`.
+   - A 002 migra os tênis Adventure Trail e Alpha Run para o catálogo, limpa os textos antigos do topo e troca o link antigo do Mercado Livre.
+2. Na Vercel, adicionar `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`.
+3. Fazer o deploy da branch.
+
+Rodar as migrations antes do deploy evita que o site novo suba sem as tabelas.
+
+## Logomarca
+
+A logo oficial ainda não foi aplicada; até lá, o cabeçalho mostra "ALPINS" em texto. Para aplicar:
+
+1. Salvar o arquivo em `images/marca/` (PNG com fundo transparente ou SVG).
+2. Em `api/_lib/site.js`, preencher `logo: { src: '/images/marca/<arquivo>', width: <largura>, height: <altura> }` com as dimensões reais. O CSS limita a altura a 40 px, sem distorcer.
+
+## Checagem local
 
 ```
-PGHOST=aws-0-sa-east-1.pooler.supabase.com
-PGPORT=6543
-PGUSER=app_service.eogykziuhsblzulqvika
-PGPASSWORD=<senha da role app_service — nunca commitar no git>
-PGDATABASE=postgres
+npm install
+npm run check
 ```
 
-O usuário do pooler sempre segue o formato `nome_da_role.referencia_do_projeto` (o Supavisor usa esse sufixo para rotear pra o projeto certo).
-
-Sem essas variáveis, o site público continua funcionando normalmente (só o formulário de leads, o rastreio de cliques e o painel ficam inativos) — é um "progressive enhancement", nunca um requisito para a página carregar.
+O `npm run check` verifica a sintaxe de todos os arquivos `.js`, se o `vercel.json` aponta para funções que existem e se cada função carrega.
 
 ## Imagens
 
-As fotos do produto (`/images/*.jpg`) são as fotos reais do tênis Mountain Trail, baixadas do Google Drive compartilhado pelo Wendel e convertidas de HEIC para JPEG — já fazem parte deste repositório, não dependem do Manus continuar no ar.
-
-A única coisa que ainda vem de fora é a logomarca do app parceiro Selah, referenciada direto de `tenismontanha.manus.space` (não foi encontrada nos drives compartilhados). Se o Manus sair do ar, essa logo some do rodapé — o resto da página continua normal. Basta pedir o arquivo da logo (PNG com fundo transparente) e colocar em `/images/selaah-logo.png`, trocando o `src` correspondente no `index.html`.
+- **Fotos dos produtos migrados**: estão em `/images` e são referenciadas pelo banco.
+- **Novas imagens**: enviadas pelo painel e armazenadas no Supabase Storage.
+- **Logo do parceiro Selah**: em `/images/parceiros/selah.png`.
 
 ## Deploy
 
-Publicado na Vercel a partir do repositório GitHub `ebarroso12/montanhatrail` (branch `main`). Qualquer push na `main` gera um novo deploy automaticamente.
+Publicado na Vercel a partir do repositório GitHub `ebarroso12/montanhatrail`. Qualquer push na `main` gera um novo deploy automaticamente.

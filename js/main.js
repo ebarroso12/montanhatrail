@@ -1,149 +1,99 @@
-// ===== Adventure Trail — interactions =====
+// ===== Alpins — interações do site público =====
 (function () {
   "use strict";
 
-  /* ---------- size table ---------- */
-  var SIZES = [
-    { br: 34, cm: 22.7 },
-    { br: 35, cm: 23.3 },
-    { br: 36, cm: 24.0 },
-    { br: 37, cm: 24.7 },
-    { br: 38, cm: 25.3 },
-    { br: 39, cm: 26.0 },
-    { br: 40, cm: 26.7 },
-    { br: 41, cm: 27.3 },
-    { br: 42, cm: 28.0 },
-    { br: 43, cm: 28.6 },
-    { br: 44, cm: 29.3 }
-  ];
-
-  var sizeGrid = document.getElementById("size-grid");
-  var sizeResult = document.getElementById("size-result");
-  var footInput = document.getElementById("foot-length");
-
-  function fmtCm(v) {
-    return String(v).replace(".", ",") + " cm";
+  /* ---------- mobile nav ---------- */
+  var navToggle = document.querySelector(".nav-toggle");
+  var mainNav = document.querySelector(".main-nav");
+  function setNav(open) {
+    if (!navToggle || !mainNav) return;
+    mainNav.classList.toggle("is-open", open);
+    navToggle.setAttribute("aria-expanded", String(open));
+    navToggle.setAttribute("aria-label", open ? "Fechar menu" : "Abrir menu");
   }
-
-  function buildGrid() {
-    if (!sizeGrid) return;
-    SIZES.forEach(function (s) {
-      var btn = document.createElement("button");
-      btn.type = "button";
-      btn.dataset.br = s.br;
-      btn.dataset.cm = s.cm;
-      btn.innerHTML =
-        "<strong>" + s.br + " BR</strong><span>" + fmtCm(s.cm) + "</span>";
-      btn.addEventListener("click", function () {
-        selectSize(s, true);
-        footInput.value = String(s.cm).replace(".", ",");
+  if (navToggle && mainNav) {
+    navToggle.addEventListener("click", function () {
+      setNav(!mainNav.classList.contains("is-open"));
+    });
+    mainNav.querySelectorAll("a").forEach(function (a) {
+      a.addEventListener("click", function () {
+        setNav(false);
       });
-      sizeGrid.appendChild(btn);
     });
   }
 
-  function clearSelection() {
-    Array.prototype.forEach.call(
-      sizeGrid.querySelectorAll("button"),
-      function (b) {
-        b.classList.remove("is-selected");
-      }
-    );
+  /* ---------- header background on scroll ---------- */
+  var header = document.querySelector(".site-header");
+  if (header) {
+    var onScroll = function () {
+      header.classList.toggle("is-scrolled", window.scrollY > 20);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
   }
 
-  function selectSize(size, exact) {
-    clearSelection();
-    var btn = sizeGrid.querySelector('button[data-br="' + size.br + '"]');
-    if (btn) btn.classList.add("is-selected");
-
-    sizeResult.classList.remove("has-match");
-    // force reflow to restart the pop-in animation
-    void sizeResult.offsetWidth;
-
-    sizeResult.innerHTML =
-      '<span class="match-size">' +
-      size.br +
-      '</span><span class="match-detail"><strong>Numeração BR ' +
-      size.br +
-      "</strong><span>" +
-      (exact
-        ? "Corresponde a " + fmtCm(size.cm) + " de comprimento do pé."
-        : "Sugestão mais próxima da medida informada (" +
-          fmtCm(size.cm) +
-          ").") +
-      "</span></span>";
-
-    sizeResult.classList.add("has-match");
+  /* ---------- broken images → placeholder ---------- */
+  function markBroken(img) {
+    if (img.id === "lightbox-img") return;
+    img.hidden = true;
+    if (img.parentElement) img.parentElement.classList.add("is-broken");
   }
+  document.addEventListener(
+    "error",
+    function (e) {
+      if (e.target && e.target.tagName === "IMG") markBroken(e.target);
+    },
+    true
+  );
+  // Images that already failed before this deferred script ran.
+  Array.prototype.forEach.call(document.images, function (img) {
+    if (img.getAttribute("src") && img.complete && img.naturalWidth === 0) markBroken(img);
+  });
 
-  function handleFootInput(raw) {
-    var normalized = raw.replace(",", ".").trim();
-    var value = parseFloat(normalized);
-
-    if (!raw || isNaN(value)) {
-      clearSelection();
-      sizeResult.classList.remove("has-match");
-      sizeResult.innerHTML = "<p>Digite a medida para consultar a tabela.</p>";
-      return;
-    }
-
-    // find the closest size by cm
-    var closest = SIZES[0];
-    var smallestDiff = Math.abs(SIZES[0].cm - value);
-    SIZES.forEach(function (s) {
-      var diff = Math.abs(s.cm - value);
-      if (diff < smallestDiff) {
-        smallestDiff = diff;
-        closest = s;
-      }
-    });
-
-    var exact = SIZES.some(function (s) {
-      return Math.abs(s.cm - value) < 0.05;
-    });
-
-    selectSize(closest, exact);
-  }
-
-  if (footInput) {
-    buildGrid();
-    footInput.addEventListener("input", function (e) {
-      handleFootInput(e.target.value);
-    });
-  }
-
-  /* ---------- trilha / caminhada toggle ---------- */
-  var toggleBtns = document.querySelectorAll(".toggle-btn");
-  toggleBtns.forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      toggleBtns.forEach(function (b) {
-        b.classList.remove("is-active");
+  /* ---------- product gallery ---------- */
+  var mainImg = document.getElementById("gallery-main");
+  var thumbs = document.querySelectorAll("[data-gallery-src]");
+  thumbs.forEach(function (thumb) {
+    thumb.addEventListener("click", function () {
+      if (!mainImg) return;
+      mainImg.hidden = false;
+      if (mainImg.parentElement) mainImg.parentElement.classList.remove("is-broken");
+      mainImg.src = thumb.getAttribute("data-gallery-src");
+      thumbs.forEach(function (t) {
+        t.classList.remove("is-active");
+        t.setAttribute("aria-pressed", "false");
       });
-      btn.classList.add("is-active");
+      thumb.classList.add("is-active");
+      thumb.setAttribute("aria-pressed", "true");
     });
   });
 
-  /* ---------- gallery lightbox ---------- */
+  /* ---------- lightbox ---------- */
   var lightbox = document.getElementById("lightbox");
   var lightboxImg = document.getElementById("lightbox-img");
   var lightboxClose = document.getElementById("lightbox-close");
+  var lastFocus = null;
 
-  document.querySelectorAll(".gallery-item").forEach(function (item) {
-    item.addEventListener("click", function () {
-      var full = item.getAttribute("data-full");
-      lightboxImg.src = full;
-      lightboxImg.alt = item.querySelector("img").alt;
+  document.querySelectorAll("[data-lightbox]").forEach(function (trigger) {
+    trigger.addEventListener("click", function () {
+      var img = trigger.querySelector("img");
+      if (!img || img.hidden || !lightbox) return;
+      lastFocus = trigger;
+      lightboxImg.src = img.currentSrc || img.src;
+      lightboxImg.alt = img.alt;
       lightbox.hidden = false;
       document.body.style.overflow = "hidden";
+      lightboxClose.focus();
     });
   });
 
   function closeLightbox() {
+    if (!lightbox || lightbox.hidden) return;
     lightbox.hidden = true;
-    lightboxImg.src = "";
+    lightboxImg.removeAttribute("src");
     document.body.style.overflow = "";
+    if (lastFocus) lastFocus.focus();
   }
-
   if (lightboxClose) lightboxClose.addEventListener("click", closeLightbox);
   if (lightbox) {
     lightbox.addEventListener("click", function (e) {
@@ -151,53 +101,34 @@
     });
   }
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape") closeLightbox();
+    if (e.key !== "Escape") return;
+    closeLightbox();
+    if (mainNav && mainNav.classList.contains("is-open")) {
+      setNav(false);
+      navToggle.focus();
+    }
   });
 
-  /* ---------- mobile nav ---------- */
-  var navToggle = document.querySelector(".nav-toggle");
-  var mainNav = document.querySelector(".main-nav");
-  if (navToggle && mainNav) {
-    navToggle.addEventListener("click", function () {
-      var isOpen = mainNav.classList.toggle("is-open");
-      navToggle.setAttribute("aria-expanded", String(isOpen));
-    });
-    mainNav.querySelectorAll("a").forEach(function (a) {
-      a.addEventListener("click", function () {
-        mainNav.classList.remove("is-open");
-        navToggle.setAttribute("aria-expanded", "false");
-      });
-    });
-  }
-
-  /* ---------- header shadow on scroll ---------- */
-  var header = document.querySelector(".site-header");
-  if (header) {
-    window.addEventListener("scroll", function () {
-      if (window.scrollY > 20) header.classList.add("is-scrolled");
-      else header.classList.remove("is-scrolled");
-    });
-  }
-
-  /* ---------- click tracking (CTA buttons) ---------- */
+  /* ---------- click tracking (marketplace buttons) ---------- */
   // Fire-and-forget: never blocks or delays the actual link click.
-  document.querySelectorAll("[data-track-label]").forEach(function (link) {
-    link.addEventListener("click", function () {
-      try {
-        fetch("/api/track-click", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            label: link.getAttribute("data-track-label"),
-            targetUrl: link.href,
-            page: window.location.pathname
-          }),
-          keepalive: true
-        }).catch(function () {});
-      } catch (e) {
-        /* tracking must never break the click-through */
-      }
-    });
+  document.addEventListener("click", function (e) {
+    var link = e.target && e.target.closest ? e.target.closest("[data-track-product]") : null;
+    if (!link) return;
+    try {
+      fetch("/api/track-click", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: Number(link.getAttribute("data-track-product")),
+          marketplace: link.getAttribute("data-track-marketplace"),
+          placement: link.getAttribute("data-track-placement"),
+          page: window.location.pathname
+        }),
+        keepalive: true
+      }).catch(function () {});
+    } catch (err) {
+      /* tracking must never break the click-through */
+    }
   });
 
   /* ---------- lead capture form ---------- */
@@ -213,9 +144,10 @@
       leadError.hidden = true;
 
       var email = document.getElementById("lead-email").value.trim();
-      if (!email || email.indexOf("@") === -1) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         leadError.textContent = "Informe um e-mail válido.";
         leadError.hidden = false;
+        document.getElementById("lead-email").focus();
         return;
       }
 
@@ -233,9 +165,14 @@
         })
       })
         .then(function (r) {
-          return r.json().then(function (data) {
-            return { status: r.status, data: data };
-          });
+          return r
+            .json()
+            .catch(function () {
+              return {};
+            })
+            .then(function (data) {
+              return { status: r.status, data: data };
+            });
         })
         .then(function (res) {
           leadSubmit.disabled = false;
@@ -244,8 +181,7 @@
             leadForm.reset();
             leadSuccess.hidden = false;
           } else {
-            leadError.textContent =
-              res.data.message || "Não foi possível enviar. Tente novamente.";
+            leadError.textContent = res.data.message || "Não foi possível enviar. Tente novamente.";
             leadError.hidden = false;
           }
         })
@@ -257,59 +193,4 @@
         });
     });
   }
-
-  /* ---------- content overrides (edited from /admin) ---------- */
-  // Fails silently and keeps the static defaults above if the API is
-  // unreachable or not configured yet — this is a progressive enhancement,
-  // never a requirement for the page to render correctly.
-  fetch("/api/admin/content")
-    .then(function (r) {
-      return r.json();
-    })
-    .then(function (data) {
-      var content = (data && data.content) || {};
-      if (!Object.keys(content).length) return;
-
-      function setText(id, key) {
-        if (!content[key]) return;
-        var el = document.getElementById(id);
-        if (el) el.textContent = content[key];
-      }
-
-      setText("hero-eyebrow", "hero_eyebrow");
-      setText("hero-title-line1", "hero_title_line1");
-      setText("hero-title-line2", "hero_title_line2");
-      setText("hero-subtitle", "hero_subtitle");
-
-      if (content.shopee_url) {
-        document.querySelectorAll('[data-link="shopee"]').forEach(function (a) {
-          a.href = content.shopee_url;
-        });
-      }
-      if (content.mercadolivre_url) {
-        document.querySelectorAll('[data-link="mercadolivre"]').forEach(function (a) {
-          a.href = content.mercadolivre_url;
-        });
-      }
-
-      // Alpha Run retirado do ar pelo painel: some da home sem quebrar links.
-      if (content.alpha_run_active === "false") {
-        ["nav-alpha-run", "alpha-teaser-section", "footer-alpha-run"].forEach(function (id) {
-          var el = document.getElementById(id);
-          if (el) el.hidden = true;
-        });
-      }
-
-      if (content.promo_banner_enabled === "true" && content.promo_banner_text) {
-        var banner = document.getElementById("promo-banner");
-        var bannerText = document.getElementById("promo-banner-text");
-        if (banner && bannerText) {
-          bannerText.textContent = content.promo_banner_text;
-          banner.hidden = false;
-        }
-      }
-    })
-    .catch(function () {
-      /* keep static content as-is */
-    });
 })();
