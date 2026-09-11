@@ -34,7 +34,8 @@ function getPool() {
       user: process.env.PGUSER || 'app_service',
       password,
       database: process.env.PGDATABASE || 'postgres',
-      ssl: { rejectUnauthorized: false },
+      // PGSSLMODE=disable só para um Postgres local de desenvolvimento.
+      ssl: process.env.PGSSLMODE === 'disable' ? false : { rejectUnauthorized: false },
       max: 3,
       idleTimeoutMillis: 10000,
       connectionTimeoutMillis: 8000,
@@ -61,4 +62,25 @@ async function query(text, params) {
   }
 }
 
-module.exports = { query };
+/** Runs fn(client) inside BEGIN/COMMIT on a single connection; rolls back on error. */
+async function transaction(fn) {
+  const client = await getPool().connect();
+  try {
+    await client.query('BEGIN');
+    const result = await fn(client);
+    await client.query('COMMIT');
+    return result;
+  } catch (err) {
+    try {
+      await client.query('ROLLBACK');
+    } catch (rollbackErr) {
+      // connection already broken — the original error is what matters
+    }
+    console.error('[db] transação desfeita:', err && err.message, err && err.code);
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+module.exports = { query, transaction };
