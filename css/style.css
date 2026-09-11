@@ -263,6 +263,8 @@ p{margin:0 0 16px;line-height:1.65}
 .product-info{display:flex;flex-direction:column;gap:14px}
 .product-title{font-size:clamp(2rem,4vw,2.9rem);margin:0}
 .product-lead{color:var(--ink-soft);font-size:1.05rem;margin:0}
+.product-cats{margin:-6px 0 0;font-size:.85rem;color:var(--ink-soft)}
+.product-cats a{color:var(--brown);text-decoration:underline;text-underline-offset:3px}
 .market-hint{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--ink-soft);margin:8px 0 0}
 .market-actions-produto .btn{flex:1 1 220px;justify-content:center}
 .fine-print{font-size:.8rem;color:var(--ink-soft);margin:0}

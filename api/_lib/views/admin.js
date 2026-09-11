@@ -257,9 +257,16 @@ function dashboard() {
       </div>
 
       <div class="admin-field">
-        <label for="p-category">Categoria *</label>
+        <label for="p-category">Categoria principal *</label>
         <select id="p-category" name="categoryId" required></select>
+        <p class="field-hint">Aparece no card e no caminho da página do produto.</p>
       </div>
+
+      <fieldset class="admin-fieldset">
+        <legend>Também aparece em (opcional)</legend>
+        <div class="admin-checks" id="p-categories"></div>
+        <p class="field-hint">Marque outras categorias em que o produto deve aparecer. Ex.: um tênis unissex em "Tênis Masculino" e "Tênis Feminino".</p>
+      </fieldset>
 
       <div class="admin-field">
         <label for="p-short">Descrição curta *</label>

@@ -37,11 +37,12 @@ As rotas ficam agrupadas em 3 funções para respeitar o limite de funções por
 
 **categories**: `id`, `name`, `slug` (único), `description`, `active`, `sort_order`, `created_at`, `updated_at`.
 
-**products**: `id`, `name`, `slug` (único), `short_description`, `description`, `category_id`, `main_image_url`, `gallery_urls` (até 12), `price`, `sale_price`, `shopee_url`, `mercadolivre_url`, `featured`, `active`, `sort_order`, `created_at`, `updated_at`.
+**products**: `id`, `name`, `slug` (único), `short_description`, `description`, `category_id` (categoria principal), `main_image_url`, `gallery_urls` (até 12), `price`, `sale_price`, `shopee_url`, `mercadolivre_url`, `featured`, `active`, `sort_order`, `created_at`, `updated_at`.
 
 - Os links de Shopee e Mercado Livre são **independentes**: o produto pode ter um, os dois ou nenhum. O botão só aparece quando o link existe.
 - `sale_price` precisa ser menor que `price`; quando existe, o site mostra o selo de promoção.
-- Uma categoria com produtos **não pode ser excluída** (proteção no banco e na API).
+- **product_categories** (`product_id`, `category_id`): um produto pode estar em **várias categorias** (ex.: um tênis unissex em "Tênis Masculino" e "Tênis Feminino"). A categoria principal sempre faz parte dessa lista (garantido por trigger); ela é a que aparece no card e no caminho da página.
+- Uma categoria usada por algum produto **não pode ser excluída** (proteção no banco e na API).
 - Para adicionar outro marketplace no futuro: nova coluna em `products` + entrada em `MARKETPLACES` (`api/_lib/validate.js`) + rótulo do botão (`api/_lib/views/components.js`).
 
 ## Painel administrativo (`/admin`)
@@ -83,7 +84,7 @@ Sem as variáveis do Supabase Storage, o painel continua funcionando com URLs de
 
 ## Publicação (ordem recomendada)
 
-1. No Supabase (SQL Editor), rodar `migrations/001_catalog.sql` e depois `migrations/002_seed_alpins.sql`.
+1. No Supabase (SQL Editor), rodar `migrations/001_catalog.sql`, depois `migrations/002_seed_alpins.sql` e por último `migrations/003_product_categories.sql`.
    - A 001 cria as tabelas, as permissões da role `app_service` e o bucket `products`.
    - A 002 migra os tênis Adventure Trail e Alpha Run para o catálogo, limpa os textos antigos do topo e troca o link antigo do Mercado Livre.
 2. Na Vercel, adicionar `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`.

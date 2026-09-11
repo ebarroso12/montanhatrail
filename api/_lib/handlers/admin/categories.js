@@ -45,9 +45,11 @@ async function reorder(body, res) {
 module.exports = async (req, res) => {
   if (req.method === 'GET') {
     const result = await db.query(
-      `SELECT c.*, count(p.id)::int AS product_count
-       FROM categories c LEFT JOIN products p ON p.category_id = c.id
-       GROUP BY c.id
+      `SELECT c.*,
+         (SELECT count(*)::int FROM products p
+           WHERE p.category_id = c.id
+              OR EXISTS (SELECT 1 FROM product_categories pc WHERE pc.product_id = p.id AND pc.category_id = c.id)) AS product_count
+       FROM categories c
        ORDER BY c.sort_order ASC, c.name ASC`
     );
     res.status(200).json({ categories: result.rows.map(toCategory) });
@@ -101,12 +103,18 @@ module.exports = async (req, res) => {
       res.status(400).json({ error: 'invalid_id' });
       return;
     }
-    const countResult = await db.query('SELECT count(*)::int AS n FROM products WHERE category_id = $1', [id]);
+    // Conta produtos em que ela é a principal ou uma das categorias extras.
+    const countResult = await db.query(
+      `SELECT count(*)::int AS n FROM products p
+       WHERE p.category_id = $1
+          OR EXISTS (SELECT 1 FROM product_categories pc WHERE pc.product_id = p.id AND pc.category_id = $1)`,
+      [id]
+    );
     const n = countResult.rows[0].n;
     if (n > 0) {
       res.status(409).json({
         error: 'category_has_products',
-        message: `Esta categoria tem ${n} produto(s). Mova esses produtos para outra categoria ou exclua-os antes.`,
+        message: `Esta categoria está em ${n} produto(s). Tire essa categoria desses produtos (ou exclua-os) antes de excluí-la.`,
       });
       return;
     }

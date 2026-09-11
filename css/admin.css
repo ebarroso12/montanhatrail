@@ -78,6 +78,13 @@ body.admin-body{min-height:100vh;display:flex;flex-direction:column;background:v
 .password-toggle:hover{color:var(--ink)}
 .password-toggle:focus-visible{outline:2px solid var(--orange);outline-offset:0}
 .password-toggle svg{width:20px;height:20px}
+
+/* categorias extras do produto */
+.admin-checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:2px 16px;margin-bottom:6px}
+.admin-checks:empty::before{content:'Nenhuma categoria cadastrada.';color:var(--ink-soft);font-size:.85rem}
+.admin-check{display:flex;align-items:center;gap:10px;min-height:40px;font-size:.92rem;cursor:pointer}
+.admin-check input{width:18px;height:18px;margin:0;flex:none;accent-color:var(--brown)}
+.admin-check input:disabled + span{color:var(--ink-soft)}
 .admin-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
 .admin-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:0 16px;align-items:end}
 .admin-fieldset{border:1px solid var(--line);border-radius:4px;padding:14px 16px 6px;margin:4px 0 18px;background:rgba(255,255,255,.4)}

@@ -3,16 +3,28 @@ const site = require('./site');
 
 /**
  * Read-side of the catalog shared by the public pages and the admin API.
- * Public queries only ever return active products from active categories.
+ *
+ * A product has one main category (products.category_id — shown on the card
+ * and in the breadcrumb) and can also appear in other categories
+ * (product_categories, which always includes the main one). Public queries
+ * only return active products whose main category is active.
  */
 
 const PRODUCT_COLUMNS = `
   p.id, p.name, p.slug, p.short_description, p.description, p.category_id,
   p.main_image_url, p.gallery_urls, p.price, p.sale_price, p.shopee_url,
   p.mercadolivre_url, p.featured, p.active, p.sort_order, p.created_at, p.updated_at,
-  c.name AS category_name, c.slug AS category_slug, c.active AS category_active`;
+  c.name AS category_name, c.slug AS category_slug, c.active AS category_active,
+  (SELECT coalesce(json_agg(json_build_object('id', ac.id, 'name', ac.name, 'slug', ac.slug, 'active', ac.active)
+            ORDER BY (ac.id = p.category_id) DESC, ac.sort_order, ac.name), '[]'::json)
+     FROM product_categories apc JOIN categories ac ON ac.id = apc.category_id
+    WHERE apc.product_id = p.id) AS categories_json`;
 
 const PRODUCT_FROM = 'FROM products p JOIN categories c ON c.id = p.category_id';
+
+// "p is in category $n" — main or additional.
+const IN_CATEGORY = (param) =>
+  `EXISTS (SELECT 1 FROM product_categories pcf WHERE pcf.product_id = p.id AND pcf.category_id = ${param})`;
 
 function toNumber(value) {
   return value == null ? null : Number(value);
@@ -26,19 +38,30 @@ function toProduct(row) {
   if (row.shopee_url) links.push({ marketplace: 'shopee', label: 'Shopee', url: row.shopee_url });
   if (row.mercadolivre_url) links.push({ marketplace: 'mercadolivre', label: 'Mercado Livre', url: row.mercadolivre_url });
 
+  const mainCategory = {
+    id: Number(row.category_id),
+    name: row.category_name,
+    slug: row.category_slug,
+    active: row.category_active,
+  };
+  const categories = (Array.isArray(row.categories_json) ? row.categories_json : []).map((cat) => ({
+    id: Number(cat.id),
+    name: cat.name,
+    slug: cat.slug,
+    active: cat.active,
+  }));
+  if (!categories.some((cat) => cat.id === mainCategory.id)) categories.unshift(mainCategory);
+
   return {
     id: Number(row.id),
     name: row.name,
     slug: row.slug,
     shortDescription: row.short_description || '',
     description: row.description || '',
-    categoryId: Number(row.category_id),
-    category: {
-      id: Number(row.category_id),
-      name: row.category_name,
-      slug: row.category_slug,
-      active: row.category_active,
-    },
+    categoryId: mainCategory.id,
+    category: mainCategory,
+    categories,
+    categoryIds: categories.map((cat) => cat.id),
     mainImageUrl: row.main_image_url || null,
     galleryUrls: Array.isArray(row.gallery_urls) ? row.gallery_urls : [],
     price,
@@ -60,12 +83,14 @@ function escapeLike(value) {
   return value.replace(/[\\%_]/g, '\\$&');
 }
 
-/** Active categories that have at least one active product, with counts. */
+/** Active categories that have at least one visible product, with counts. */
 async function listCategories() {
   const result = await db.query(
-    `SELECT c.id, c.name, c.slug, c.description, count(p.id)::int AS product_count
+    `SELECT c.id, c.name, c.slug, c.description, count(DISTINCT p.id)::int AS product_count
      FROM categories c
-     JOIN products p ON p.category_id = c.id AND p.active
+     JOIN product_categories pc ON pc.category_id = c.id
+     JOIN products p ON p.id = pc.product_id AND p.active
+     JOIN categories main ON main.id = p.category_id AND main.active
      WHERE c.active
      GROUP BY c.id
      ORDER BY c.sort_order ASC, c.name ASC`
@@ -94,7 +119,7 @@ async function listProducts(options) {
   const params = [];
   if (categoryId) {
     params.push(categoryId);
-    where.push(`p.category_id = $${params.length}`);
+    where.push(IN_CATEGORY(`$${params.length}`));
   }
   if (featured) where.push('p.featured');
   if (search) {
@@ -127,13 +152,15 @@ async function getProductBySlug(slug, options) {
   return result.rows[0] ? toProduct(result.rows[0]) : null;
 }
 
+/** Products sharing any category with the given one; same main category first. */
 async function listRelated(product, limit) {
   const result = await db.query(
     `SELECT ${PRODUCT_COLUMNS} ${PRODUCT_FROM}
-     WHERE p.active AND c.active AND p.category_id = $1 AND p.id <> $2
-     ORDER BY p.featured DESC, p.sort_order ASC, p.created_at DESC
-     LIMIT $3`,
-    [product.categoryId, product.id, limit || 4]
+     WHERE p.active AND c.active AND p.id <> $2
+       AND EXISTS (SELECT 1 FROM product_categories x WHERE x.product_id = p.id AND x.category_id = ANY($1::bigint[]))
+     ORDER BY (p.category_id = $3) DESC, p.featured DESC, p.sort_order ASC, p.created_at DESC
+     LIMIT $4`,
+    [product.categoryIds, product.id, product.categoryId, limit || 4]
   );
   return result.rows.map(toProduct);
 }
@@ -144,7 +171,9 @@ async function sitemapEntries() {
   );
   const categories = await db.query(
     `SELECT c.slug, max(p.updated_at) AS updated_at
-     FROM categories c JOIN products p ON p.category_id = c.id AND p.active
+     FROM categories c
+     JOIN product_categories pc ON pc.category_id = c.id
+     JOIN products p ON p.id = pc.product_id AND p.active
      WHERE c.active GROUP BY c.id ORDER BY c.sort_order, c.id`
   );
   return { products: products.rows, categories: categories.rows };
@@ -170,6 +199,7 @@ async function getContent() {
 module.exports = {
   PRODUCT_COLUMNS,
   PRODUCT_FROM,
+  IN_CATEGORY,
   toProduct,
   listCategories,
   getCategoryBySlug,

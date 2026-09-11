@@ -280,6 +280,7 @@ function product(ctx, data) {
   const p = data.product;
   const related = data.related;
   const images = [p.mainImageUrl].concat(p.galleryUrls).filter(Boolean);
+  const otherCategories = p.categories.filter((cat) => cat.active && cat.id !== p.categoryId);
   const path = `/produto/${p.slug}`;
   const whatsapp = site.whatsappUrl(
     `Olá! Tenho interesse no produto "${p.name}" que vi no site da Alpins: ${absoluteUrl(ctx.base, path)}`
@@ -324,6 +325,13 @@ ${previewBanner}
     <div class="product-info">
       <a class="product-category" href="/categoria/${esc(p.category.slug)}">${esc(p.category.name)}</a>
       <h1 class="product-title">${esc(p.name)}</h1>
+      ${
+        otherCategories.length
+          ? `<p class="product-cats">Também em: ${otherCategories
+              .map((cat) => `<a href="/categoria/${esc(cat.slug)}">${esc(cat.name)}</a>`)
+              .join(' · ')}</p>`
+          : ''
+      }
       ${p.onSale ? `<span class="badge badge-sale badge-static">Promoção −${p.discountPercent}%</span>` : ''}
       ${c.price(p, 'lg')}
       ${p.shortDescription ? `<p class="product-lead">${esc(p.shortDescription)}</p>` : ''}

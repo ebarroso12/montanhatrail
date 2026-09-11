@@ -146,6 +146,7 @@
     showMsg(box, err.message);
     var target = null;
     if (err.field === 'galleryUrls') target = $('p-gallery-url');
+    else if (err.field === 'categoryIds') target = document.querySelector('#p-categories input:not(:disabled)');
     else if (err.field && form.elements[err.field] && form.elements[err.field].nodeType) target = form.elements[err.field];
     if (target) {
       var wrap = target.closest('.admin-field');
@@ -312,7 +313,7 @@
     var select = $('p-category');
     var selectValue = select.value;
     clear(select);
-    select.appendChild(h('option', { value: '', text: 'Selecione a categoria' }));
+    select.appendChild(h('option', { value: '', text: 'Selecione a categoria principal' }));
 
     state.categories.forEach(function (cat) {
       var label = cat.name + (cat.active ? '' : ' (inativa)');
@@ -389,7 +390,7 @@
     if (cat.productCount > 0) {
       confirmDelete({
         title: 'Não é possível excluir',
-        message: 'A categoria "' + cat.name + '" tem ' + plural(cat.productCount, 'produto', 'produtos') + '. Mova esses produtos para outra categoria ou exclua-os antes. Se quiser só tirar do site, use Desativar.',
+        message: 'A categoria "' + cat.name + '" tem ' + plural(cat.productCount, 'produto', 'produtos') + '. Tire essa categoria desses produtos (na edição de cada um) ou exclua-os antes. Se quiser só tirar do site, use Desativar.',
         blocked: true,
       });
       return;
@@ -529,7 +530,7 @@
         h('div', { class: 'admin-row-main' }, [
           h('p', { class: 'admin-row-title', text: p.name }),
           h('div', { class: 'admin-row-meta' }, [
-            h('span', { text: p.category.name + (p.category.active ? '' : ' (inativa)') }),
+            h('span', { text: p.categories.map(function (c) { return c.name + (c.active ? '' : ' (inativa)'); }).join(' · ') }),
             h('span', { text: priceLabel(p) }),
             h('span', { class: 'pill ' + (p.active ? 'pill-on' : 'pill-off'), text: p.active ? 'Ativo' : 'Inativo' }),
             p.featured ? h('span', { class: 'pill pill-star', text: 'Destaque' }) : null,
@@ -796,6 +797,27 @@
     });
   }
 
+  /** Checkboxes "Também aparece em": the main category is always checked and locked. */
+  function renderCategoryChecks(selected) {
+    var box = $('p-categories');
+    var mainId = $('p-category').value;
+    clear(box);
+    state.categories.forEach(function (cat) {
+      var id = String(cat.id);
+      var isMain = id === mainId;
+      box.appendChild(h('label', { class: 'admin-check', for: 'p-cat-' + id }, [
+        h('input', { type: 'checkbox', id: 'p-cat-' + id, value: id, checked: isMain || selected.indexOf(id) !== -1, disabled: isMain }),
+        h('span', { text: cat.name + (cat.active ? '' : ' (inativa)') + (isMain ? ' — principal' : '') }),
+      ]));
+    });
+  }
+
+  function selectedCategoryIds() {
+    return Array.prototype.map.call($('p-categories').querySelectorAll('input:checked'), function (input) {
+      return input.value;
+    });
+  }
+
   function openProductEditor(product) {
     if (!state.categories.length) {
       loadCategories().then(function (categories) {
@@ -824,6 +846,7 @@
     el.name.value = product ? product.name : '';
     el.slug.value = product ? product.slug : '';
     el.categoryId.value = product ? String(product.categoryId) : '';
+    renderCategoryChecks(product ? product.categoryIds.map(String) : []);
     el.shortDescription.value = product ? product.shortDescription : '';
     el.description.value = product ? product.description : '';
     el.mainImageUrl.value = product && product.mainImageUrl ? product.mainImageUrl : '';
@@ -849,6 +872,7 @@
       name: el.name.value,
       slug: el.slug.value,
       categoryId: el.categoryId.value,
+      categoryIds: selectedCategoryIds(),
       shortDescription: el.shortDescription.value,
       description: el.description.value,
       mainImageUrl: el.mainImageUrl.value,
@@ -915,6 +939,9 @@
     form.elements.slug.addEventListener('blur', function () {
       form.elements.slug.value = slugify(form.elements.slug.value);
       updateSlugPreview();
+    });
+    form.elements.categoryId.addEventListener('change', function () {
+      renderCategoryChecks(selectedCategoryIds());
     });
     form.elements.shopeeUrl.addEventListener('input', updateTestLinks);
     form.elements.mercadolivreUrl.addEventListener('input', updateTestLinks);
