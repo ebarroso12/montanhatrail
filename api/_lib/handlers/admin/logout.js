@@ -1,5 +1,5 @@
-const db = require('../_lib/db');
-const { parseCookies, clearSessionCookie, SESSION_COOKIE } = require('../_lib/auth');
+const db = require('../../db');
+const { parseCookies, clearSessionCookie, SESSION_COOKIE } = require('../../auth');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {

@@ -1,5 +1,5 @@
-const db = require('./_lib/db');
-const { parseBody } = require('./_lib/body');
+const db = require('../db');
+const { parseBody } = require('../body');
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);

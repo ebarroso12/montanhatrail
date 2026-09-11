@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
-const db = require('../_lib/db');
-const { parseBody } = require('../_lib/body');
+const db = require('../../db');
+const { parseBody } = require('../../body');
 const {
   setSessionCookie,
   generateToken,
@@ -8,7 +8,7 @@ const {
   MAX_FAILED_ATTEMPTS,
   LOCKOUT_WINDOW_MINUTES,
   getClientIp,
-} = require('../_lib/auth');
+} = require('../../auth');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {

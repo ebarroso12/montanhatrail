@@ -1,5 +1,5 @@
-const db = require('../_lib/db');
-const { requireAdmin } = require('../_lib/auth');
+const db = require('../../db');
+const { requireAdmin } = require('../../auth');
 
 /** Protected: lists the most recent leads for the admin dashboard. */
 module.exports = async (req, res) => {

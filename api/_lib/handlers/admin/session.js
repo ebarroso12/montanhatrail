@@ -1,4 +1,4 @@
-const { getSessionAdmin } = require('../_lib/auth');
+const { getSessionAdmin } = require('../../auth');
 
 /** Lets the admin frontend check "am I logged in?" without exposing anything sensitive. */
 module.exports = async (req, res) => {

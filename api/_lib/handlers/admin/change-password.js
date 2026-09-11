@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
-const db = require('../_lib/db');
-const { parseBody } = require('../_lib/body');
-const { requireAdmin } = require('../_lib/auth');
+const db = require('../../db');
+const { parseBody } = require('../../body');
+const { requireAdmin } = require('../../auth');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
