@@ -28,23 +28,30 @@ function truncate(value, max) {
 
 const MOUNTAIN_PATH = 'M3 20 L9.5 8 L13 14.5 L15.5 10 L21 20 Z';
 
-const FAVICON =
-  'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛰️</text></svg>';
+const FAVICON = '/images/marca/favicon-64.png';
 
 const FONTS = `<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">`;
 
-/** Logo oficial quando configurada em site.js; até lá, o nome em texto. */
-function brandInner() {
-  if (site.logo) {
-    return `<img class="brand-logo" src="${esc(site.logo.src)}" alt="${esc(site.name)}" width="${Number(site.logo.width) || ''}" height="${Number(site.logo.height) || ''}">`;
+/**
+ * Marca: no cabeçalho, o símbolo "A" + o nome em texto (legível em qualquer
+ * tamanho); no rodapé, a logo completa com o slogan. Sem logo configurada,
+ * volta para o ícone de montanha + nome.
+ */
+function brandInner(variant) {
+  const logo = site.logo;
+  if (logo && variant === 'footer') {
+    return `<img class="brand-logo-full" src="${esc(logo.full)}" alt="${esc(site.name)} — Fé, esporte e montanha. Viva forte." width="${Number(logo.fullWidth) || ''}" height="${Number(logo.fullHeight) || ''}" loading="lazy" decoding="async">`;
   }
-  return `<svg viewBox="0 0 24 24" class="brand-mark" aria-hidden="true" focusable="false"><path d="${MOUNTAIN_PATH}" fill="currentColor"/></svg><span class="brand-word">ALPINS</span>`;
+  const mark = logo
+    ? `<img class="brand-symbol" src="${esc(logo.symbol)}" alt="" width="48" height="48">`
+    : `<svg viewBox="0 0 24 24" class="brand-mark" aria-hidden="true" focusable="false"><path d="${MOUNTAIN_PATH}" fill="currentColor"/></svg>`;
+  return `${mark}<span class="brand-word">ALPINS</span>`;
 }
 
-function brand(extraClass) {
-  return `<a class="brand${extraClass ? ` ${extraClass}` : ''}" href="/" aria-label="${esc(site.name)} — página inicial">${brandInner()}</a>`;
+function brand(extraClass, variant) {
+  return `<a class="brand${extraClass ? ` ${extraClass}` : ''}" href="/" aria-label="${esc(site.name)} — página inicial">${brandInner(variant)}</a>`;
 }
 
 function header() {
@@ -73,7 +80,7 @@ function footer(ctx) {
   const dev = site.developer;
   return `<footer class="site-footer">
   <div class="wrap footer-top">
-    ${brand('brand-footer')}
+    ${brand('brand-footer', 'footer')}
     <p>Produtos selecionados e organizados por categoria, com links diretos para a Shopee e o Mercado Livre.</p>
     <div class="cta-row">
       <a class="btn btn-whatsapp btn-sm" href="${esc(site.whatsappUrl())}" target="_blank" rel="noopener noreferrer">WhatsApp ${esc(site.phone.display)} ↗</a>
@@ -133,7 +140,7 @@ function layout(opts) {
   const fullTitle = opts.title ? `${opts.title} | ${site.name}` : `${site.name} — Catálogo de produtos selecionados`;
   const description = truncate(opts.description || site.description, 200);
   const canonical = absoluteUrl(ctx.base, opts.path || '/');
-  const image = absoluteUrl(ctx.base, opts.image || site.heroImage);
+  const image = absoluteUrl(ctx.base, opts.image || site.ogImage || site.heroImage);
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -154,7 +161,8 @@ ${opts.noindex ? '<meta name="robots" content="noindex, follow">' : `<link rel="
 <meta name="theme-color" content="#14170f">
 ${FONTS}
 <link rel="stylesheet" href="/css/style.css">
-<link rel="icon" href="${FAVICON}">
+<link rel="icon" type="image/png" href="${FAVICON}">
+<link rel="apple-touch-icon" href="/images/marca/apple-touch-icon.png">
 </head>
 <body class="${esc(opts.bodyClass || '')}">
 <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>

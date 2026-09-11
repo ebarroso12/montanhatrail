@@ -28,6 +28,7 @@ function login() {
     'admin-login-page',
     `<main class="admin-login-wrap">
   <div class="admin-login-card">
+    <img class="admin-login-symbol" src="/images/marca/alpins-simbolo.jpg" alt="" width="64" height="64">
     <p class="admin-login-brand">ALPINS</p>
     <h1>Painel <em>${esc(site.name)}</em></h1>
     <p class="sub">Acesso restrito à administração do catálogo.</p>
@@ -73,7 +74,7 @@ function dashboard() {
     `Painel — ${site.name}`,
     'admin-dashboard',
     `<header class="admin-topbar">
-  <a class="brand" href="/admin">ALPINS <b>· painel</b></a>
+  <a class="brand" href="/admin"><img src="/images/marca/alpins-simbolo.jpg" alt="" width="32" height="32">ALPINS <b>· painel</b></a>
   <div class="admin-topbar-right">
     <a href="/" target="_blank" rel="noopener noreferrer">Ver site ↗</a>
     <button class="admin-btn admin-btn-ghost" id="logout-btn" type="button">Sair</button>

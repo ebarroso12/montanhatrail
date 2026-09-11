@@ -9,6 +9,8 @@ body.admin-body{min-height:100vh;display:flex;flex-direction:column;background:v
 }
 .admin-topbar .brand{margin:0;font-size:.95rem;letter-spacing:.2em;color:var(--cream)}
 .admin-topbar .brand b{color:var(--orange);font-weight:600;letter-spacing:.04em}
+.admin-topbar .brand img{width:32px;height:32px;border-radius:6px;margin-right:4px}
+.admin-login-symbol{display:block;width:64px;height:64px;border-radius:12px;margin-bottom:14px}
 .admin-topbar-right{display:flex;align-items:center;gap:16px;font-size:.85rem;color:var(--cream-soft)}
 .admin-topbar-right a:hover{color:var(--cream)}
 

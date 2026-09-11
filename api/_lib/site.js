@@ -30,11 +30,18 @@ module.exports = {
   whatsappUrl,
   siteUrl,
 
-  // Logomarca oficial ainda não fornecida. Quando chegar, coloque o arquivo em
-  // /images/marca/ e preencha, por exemplo:
-  // logo: { src: '/images/marca/alpins-logo.png', width: 480, height: 160 },
-  // Enquanto for null, o cabeçalho e o rodapé mostram o nome "ALPINS" em texto.
-  logo: null,
+  // Logomarca oficial (arte original: /images/marca/alpins-logo.jpg).
+  // symbol: recorte do "A" usado no cabeçalho, ao lado do nome em texto.
+  // full: logo com nome e slogan, usada no rodapé.
+  // Para trocar, substitua os arquivos mantendo os nomes (ou ajuste os caminhos aqui).
+  logo: {
+    symbol: '/images/marca/alpins-simbolo.jpg',
+    full: '/images/marca/alpins-logo-rodape.jpg',
+    fullWidth: 640,
+    fullHeight: 624,
+  },
+  // Imagem padrão ao compartilhar o site (WhatsApp, redes sociais).
+  ogImage: '/images/marca/alpins-logo.jpg',
 
   heroImage: '/images/hero-produto-cachoeira.jpg',
 

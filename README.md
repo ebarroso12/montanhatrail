@@ -94,10 +94,16 @@ Rodar as migrations antes do deploy evita que o site novo suba sem as tabelas.
 
 ## Logomarca
 
-A logo oficial ainda não foi aplicada; até lá, o cabeçalho mostra "ALPINS" em texto. Para aplicar:
+Arquivos em `images/marca/`, gerados a partir da arte original (1254×1254):
 
-1. Salvar o arquivo em `images/marca/` (PNG com fundo transparente ou SVG).
-2. Em `api/_lib/site.js`, preencher `logo: { src: '/images/marca/<arquivo>', width: <largura>, height: <altura> }` com as dimensões reais. O CSS limita a altura a 40 px, sem distorcer.
+| Arquivo | Uso |
+|---|---|
+| `alpins-logo.jpg` (1200×1200) | imagem padrão ao compartilhar o site (Open Graph) |
+| `alpins-logo-rodape.jpg` (640×624) | logo completa com slogan, no rodapé |
+| `alpins-simbolo.jpg` (192×192) | símbolo "A" no cabeçalho (ao lado do nome em texto) e no painel |
+| `favicon-64.png`, `apple-touch-icon.png` | ícone da aba e da tela inicial do celular |
+
+Para trocar a logo, substitua esses arquivos mantendo os nomes; os caminhos ficam em `api/_lib/site.js` (`logo` e `ogImage`).
 
 ## Checagem local
 

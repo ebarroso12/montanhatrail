@@ -116,7 +116,8 @@ p{margin:0 0 16px;line-height:1.65}
 .brand{display:flex;align-items:center;gap:9px;font-weight:700;color:var(--cream);font-size:.95rem;margin-right:auto}
 .brand-word{letter-spacing:.24em;font-weight:800}
 .brand-mark{width:20px;height:20px;color:var(--orange);flex:none}
-.brand-logo{height:40px;width:auto;max-width:180px;object-fit:contain}
+.brand-symbol{width:44px;height:44px;border-radius:8px;object-fit:cover;flex:none;box-shadow:0 0 0 1px rgba(242,235,221,.14)}
+.brand-logo-full{display:block;width:220px;height:auto;border-radius:10px}
 .main-nav{display:flex;gap:26px}
 .main-nav a{
   font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
