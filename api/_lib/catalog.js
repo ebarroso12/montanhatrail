@@ -174,6 +174,7 @@ async function sitemapEntries() {
      FROM categories c
      JOIN product_categories pc ON pc.category_id = c.id
      JOIN products p ON p.id = pc.product_id AND p.active
+     JOIN categories main ON main.id = p.category_id AND main.active
      WHERE c.active GROUP BY c.id ORDER BY c.sort_order, c.id`
   );
   return { products: products.rows, categories: categories.rows };

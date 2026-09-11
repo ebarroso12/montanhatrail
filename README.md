@@ -62,7 +62,10 @@ Abas:
 ## Segurança
 
 - RLS ligado em todas as tabelas, sem políticas para `anon`/`authenticated`. O navegador nunca acessa o banco direto.
-- Senha com hash bcrypt, sessão com cookie `HttpOnly` + `Secure` + `SameSite=Lax`, bloqueio após 5 tentativas erradas em 15 min.
+- Senha com hash bcrypt (8 a 72 caracteres), sessão com cookie `HttpOnly` + `Secure` + `SameSite=Lax`.
+- Login: bloqueio após 5 tentativas erradas em 15 min por e-mail + IP (e 30 por e-mail no total), tentativas simultâneas serializadas no banco, mesmo tempo de resposta para e-mail existente ou não. Trocar a senha encerra as sessões de outros aparelhos.
+- Conexão com o Postgres por TLS **com certificado validado** (CA raiz do Supabase em `api/_lib/supabase-ca.js`).
+- LGPD: o formulário de novidades exige consentimento explícito (a versão do aviso fica registrada no lead), há a página `/privacidade`, cadastros repetidos não duplicam e o painel permite excluir um lead a pedido da pessoa.
 - Operações de escrita do painel exigem sessão válida, corpo JSON e origem igual à do site (proteção contra CSRF).
 - Validação no servidor de todos os campos. Os links de compra só aceitam `https` e os domínios oficiais: `shopee.com.br`, `shope.ee`, `shp.ee`, `mercadolivre.com.br`, `mercadolivre.com`, `meli.la`.
 - Upload: o tipo real do arquivo é conferido pelos bytes (JPG, PNG ou WebP, até 3 MB). A service key do Supabase só existe no servidor.

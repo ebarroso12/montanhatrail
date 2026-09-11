@@ -101,6 +101,12 @@
     });
   }
   document.addEventListener("keydown", function (e) {
+    // Com a imagem ampliada aberta, o Tab fica no botão de fechar (única ação disponível).
+    if (e.key === "Tab" && lightbox && !lightbox.hidden) {
+      e.preventDefault();
+      lightboxClose.focus();
+      return;
+    }
     if (e.key !== "Escape") return;
     closeLightbox();
     if (mainNav && mainNav.classList.contains("is-open")) {
@@ -151,6 +157,14 @@
         return;
       }
 
+      var consent = document.getElementById("lead-consent");
+      if (consent && !consent.checked) {
+        leadError.textContent = "Para receber novidades, marque que concorda com o aviso de privacidade.";
+        leadError.hidden = false;
+        consent.focus();
+        return;
+      }
+
       leadSubmit.disabled = true;
       var originalLabel = leadSubmit.textContent;
       leadSubmit.textContent = "Enviando…";
@@ -161,6 +175,7 @@
         body: JSON.stringify({
           name: document.getElementById("lead-name").value.trim(),
           email: email,
+          consent: !!(consent && consent.checked),
           website: document.getElementById("lead-website").value
         })
       })

@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+const SUPABASE_CA = require('./supabase-ca');
 
 let pool;
 
@@ -34,8 +35,10 @@ function getPool() {
       user: process.env.PGUSER || 'app_service',
       password,
       database: process.env.PGDATABASE || 'postgres',
-      // PGSSLMODE=disable só para um Postgres local de desenvolvimento.
-      ssl: process.env.PGSSLMODE === 'disable' ? false : { rejectUnauthorized: false },
+      // TLS com certificado validado: o pooler do Supabase é assinado pela CA
+      // própria "Supabase Root 2021 CA" (supabase-ca.js). PGSSLMODE=disable só
+      // para um Postgres local de desenvolvimento.
+      ssl: process.env.PGSSLMODE === 'disable' ? false : { ca: SUPABASE_CA, rejectUnauthorized: true },
       max: 3,
       idleTimeoutMillis: 10000,
       connectionTimeoutMillis: 8000,

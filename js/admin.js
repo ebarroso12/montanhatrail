@@ -990,11 +990,32 @@
           box.appendChild(h('div', { class: 'admin-empty', text: 'Nenhum lead recebido ainda.' }));
           return;
         }
-        box.appendChild(table(['Data', 'Nome', 'E-mail', 'Telefone', 'Mensagem'], leads.map(function (lead) {
-          return [formatDate(lead.created_at), lead.name || '—', lead.email, lead.phone || '—', lead.message || '—'];
+        box.appendChild(table(['Data', 'Nome', 'E-mail', 'Origem', ''], leads.map(function (lead) {
+          return [
+            formatDate(lead.created_at),
+            lead.name || '—',
+            lead.email,
+            lead.source || '—',
+            h('button', { type: 'button', class: 'admin-btn admin-btn-danger-outline admin-btn-sm', text: 'Excluir', onclick: function () { deleteLead(lead); } }),
+          ];
         })));
       })
       .catch(function (err) { box.textContent = err.message; });
+  }
+
+  /** LGPD: remove a lead when the person asks for their data to be deleted. */
+  function deleteLead(lead) {
+    confirmDelete({
+      title: 'Excluir cadastro',
+      message: 'Excluir o cadastro de ' + lead.email + '? Use quando a pessoa pedir a remoção dos dados. Esta ação não pode ser desfeita.',
+      onConfirm: function () {
+        return api('leads?id=' + encodeURIComponent(lead.id), { method: 'DELETE' }).then(function () {
+          toast('Cadastro excluído.');
+          loadLeads();
+          loadStats();
+        });
+      },
+    });
   }
 
   var MARKETPLACE_LABELS = { shopee: 'Shopee', mercadolivre: 'Mercado Livre' };
@@ -1055,7 +1076,7 @@
     });
     payload.promo_banner_enabled = form.elements.promo_banner_enabled.checked ? 'true' : 'false';
     api('content', { method: 'POST', body: { content: payload } })
-      .then(function () { showMsg($('content-success'), 'Salvo com sucesso. O site é atualizado em até 1 minuto.'); })
+      .then(function () { showMsg($('content-success'), 'Salvo com sucesso. O site é atualizado em até 2 minutos.'); })
       .catch(function (err) { showMsg($('content-error'), err.message); });
   });
 
@@ -1071,7 +1092,7 @@
       body: { currentPassword: $('current-password').value, newPassword: $('new-password').value },
     })
       .then(function () {
-        showMsg($('pwd-success'), 'Senha alterada com sucesso.');
+        showMsg($('pwd-success'), 'Senha alterada. Outros aparelhos que estavam conectados ao painel foram desconectados.');
         form.reset();
       })
       .catch(function (err) { showMsg($('pwd-error'), err.message); });

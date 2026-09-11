@@ -74,6 +74,15 @@ function imagesOf(product) {
 
 /** Deletes uploaded files no longer referenced by any product (best effort). */
 async function cleanupImages(candidates) {
+  try {
+    await removeUnusedImages(candidates);
+  } catch (err) {
+    // The product was already saved/deleted; a cleanup failure must not turn that into an error.
+    console.error('[products] limpeza de imagens falhou:', err && err.message);
+  }
+}
+
+async function removeUnusedImages(candidates) {
   const unique = Array.from(new Set(candidates.filter(Boolean)));
   if (!unique.length) return;
   const stillUsed = await db.query(

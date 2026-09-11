@@ -76,13 +76,12 @@ module.exports = async (req, res) => {
     }
   }
 
-  if (isProtected) {
-    const adminId = await requireAdmin(req, res);
-    if (!adminId) return;
-    req.adminId = adminId;
-  }
-
   try {
+    if (isProtected) {
+      const adminId = await requireAdmin(req, res);
+      if (!adminId) return;
+      req.adminId = adminId;
+    }
     await (isOpen ? OPEN_ROUTES[route] : PROTECTED_ROUTES[route])(req, res);
   } catch (err) {
     if (!res.headersSent) sendError(res, err);

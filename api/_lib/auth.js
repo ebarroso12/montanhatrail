@@ -15,7 +15,11 @@ function parseCookies(req) {
     if (idx === -1) return;
     const key = pair.slice(0, idx).trim();
     const val = pair.slice(idx + 1).trim();
-    cookies[key] = decodeURIComponent(val);
+    try {
+      cookies[key] = decodeURIComponent(val);
+    } catch (e) {
+      // Malformed cookie (e.g. set by another app on the same domain): ignore it.
+    }
   });
   return cookies;
 }
@@ -47,7 +51,8 @@ function generateToken() {
 async function getSessionAdmin(req) {
   const cookies = parseCookies(req);
   const token = cookies[SESSION_COOKIE];
-  if (!token) return null;
+  // Tokens are always 64 hex chars (generateToken); anything else can't be a session.
+  if (!token || !/^[a-f0-9]{64}$/.test(token)) return null;
 
   let result;
   try {
@@ -63,8 +68,12 @@ async function getSessionAdmin(req) {
   if (!row) return null;
 
   if (new Date(row.expires_at).getTime() < Date.now()) {
-    // Expired — clean it up lazily.
-    await db.query('DELETE FROM admin_sessions WHERE token = $1', [token]);
+    // Expired — clean it up lazily (a failure here must not break the request).
+    try {
+      await db.query('DELETE FROM admin_sessions WHERE token = $1', [token]);
+    } catch (err) {
+      // ignore
+    }
     return null;
   }
 
@@ -82,8 +91,11 @@ async function requireAdmin(req, res) {
 }
 
 function getClientIp(req) {
+  // On Vercel, x-real-ip is set by the platform with the visitor's address.
+  const real = req.headers['x-real-ip'];
+  if (real) return String(real).trim().slice(0, 64);
   const fwd = req.headers['x-forwarded-for'];
-  if (fwd) return String(fwd).split(',')[0].trim();
+  if (fwd) return String(fwd).split(',')[0].trim().slice(0, 64);
   return (req.socket && req.socket.remoteAddress) || 'unknown';
 }
 

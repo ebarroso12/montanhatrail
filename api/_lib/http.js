@@ -1,7 +1,7 @@
 const CACHE = {
-  // Public pages: the CDN serves them for 60s and revalidates in the
-  // background, so admin edits show up on the site in about a minute.
-  page: 'public, max-age=0, s-maxage=60, stale-while-revalidate=600',
+  // Public pages: the CDN serves them for 60s and may serve a stale copy for
+  // another 60s while revalidating, so admin edits show up within ~2 minutes.
+  page: 'public, max-age=0, s-maxage=60, stale-while-revalidate=60',
   notFound: 'public, max-age=0, s-maxage=30',
   private: 'private, no-store',
 };

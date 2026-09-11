@@ -121,7 +121,7 @@ function footer(ctx) {
 
   <div class="footer-legal">
     <div class="wrap legal-note">
-      <p class="legal-brand">© ${year} ${esc(site.name)} · WhatsApp <a href="tel:${esc(site.phone.tel)}">${esc(site.phone.display)}</a></p>
+      <p class="legal-brand">© ${year} ${esc(site.name)} · WhatsApp <a href="tel:${esc(site.phone.tel)}">${esc(site.phone.display)}</a> · <a href="/privacidade">Aviso de privacidade</a></p>
       <p>A ${esc(site.name)} divulga produtos anunciados na Shopee e no Mercado Livre. A compra, o pagamento e a entrega acontecem no marketplace, que define preço, estoque, frete e condições no momento da compra. Alguns links podem ser de programas de afiliados.</p>
     </div>
   </div>

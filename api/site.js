@@ -73,6 +73,10 @@ const PUBLIC_PAGES = {
     sendHtml(res, 200, pages.listing(ctx, { category, page, pageSize: PAGE_SIZE, result }), CACHE.page);
   },
 
+  async privacidade(req, res, ctx) {
+    sendHtml(res, 200, pages.privacy(ctx), CACHE.page);
+  },
+
   async produto(req, res, ctx) {
     if (ctx.catalogError) throw ctx.catalogError;
     const slug = String(req.query.slug || '');
@@ -94,7 +98,7 @@ const OTHER_PAGES = {
   async sitemap(req, res) {
     const base = site.siteUrl(req);
     const { products, categories } = await catalog.sitemapEntries();
-    const urls = [{ loc: '/' }, { loc: '/catalogo' }]
+    const urls = [{ loc: '/' }, { loc: '/catalogo' }, { loc: '/privacidade' }]
       .concat(categories.map((c) => ({ loc: `/categoria/${c.slug}`, lastmod: c.updated_at })))
       .concat(products.map((p) => ({ loc: `/produto/${p.slug}`, lastmod: p.updated_at })));
     const xml = `<?xml version="1.0" encoding="UTF-8"?>

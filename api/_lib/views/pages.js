@@ -53,6 +53,11 @@ function leadSection() {
           <input type="text" id="lead-website" name="website" tabindex="-1" autocomplete="off">
         </div>
 
+        <label class="consent" for="lead-consent">
+          <input type="checkbox" id="lead-consent" name="consent" required>
+          <span>Quero receber novidades da Alpins por e-mail e concordo com o <a href="/privacidade">aviso de privacidade</a>. Posso pedir a remoção dos meus dados quando quiser.</span>
+        </label>
+
         <button type="submit" class="btn btn-dark btn-block" id="lead-submit">Quero ser alpinista</button>
       </form>
     </div>
@@ -270,7 +275,8 @@ function listing(ctx, data) {
       ? category.description || `Produtos da categoria ${category.name} no catálogo Alpins.`
       : 'Catálogo completo da Alpins, com links diretos para a Shopee e o Mercado Livre.',
     path: basePath + (page > 1 ? `?pagina=${page}` : ''),
-    noindex: !!search,
+    // Busca e listagens vazias (categoria sem produtos, página além do fim) ficam fora do Google.
+    noindex: !!search || !result.items.length,
     bodyClass: 'page-listing',
     content,
   });
@@ -410,4 +416,53 @@ function unavailable(ctx) {
   });
 }
 
-module.exports = { home, listing, product, notFound, unavailable };
+function privacy(ctx) {
+  const phone = esc(site.phone.display);
+  const whatsapp = `<a href="${esc(site.whatsappUrl('Olá! Quero falar sobre os meus dados cadastrados no site da Alpins.'))}" target="_blank" rel="noopener noreferrer">WhatsApp ${phone}</a>`;
+  return layout({
+    ctx,
+    title: 'Aviso de privacidade',
+    description: 'Como a Alpins trata os dados de quem visita o site e se cadastra para receber novidades.',
+    path: '/privacidade',
+    bodyClass: 'page-legal',
+    content: `${pageHead({
+      breadcrumb: breadcrumb([{ label: 'Início', href: '/' }, { label: 'Aviso de privacidade' }]),
+      eyebrow: 'Transparência',
+      heading: 'Aviso de <em>privacidade.</em>',
+      intro: 'Última atualização: 11 de setembro de 2026.',
+    })}
+<section class="section section-cream section-tight">
+  <div class="wrap legal-page">
+    <h2>Quem somos</h2>
+    <p>A ${esc(site.name)} é um catálogo de produtos. Para falar sobre privacidade e sobre os seus dados, use o ${whatsapp}.</p>
+
+    <h2>Quais dados coletamos</h2>
+    <ul>
+      <li><strong>Formulário "Seja um alpinista":</strong> nome (opcional) e e-mail, com a data do cadastro.</li>
+      <li><strong>Cliques nos botões de compra:</strong> qual produto e qual marketplace foram clicados e em qual página, sem nome, e-mail ou outro dado que identifique você.</li>
+      <li><strong>Cookies:</strong> o site não usa cookies de rastreamento nem de publicidade. O único cookie é o de login da área administrativa.</li>
+    </ul>
+
+    <h2>Para que usamos</h2>
+    <ul>
+      <li>Enviar novidades, lançamentos e ofertas do catálogo para quem se cadastrou e deu consentimento.</li>
+      <li>Entender quais produtos despertam mais interesse, por meio da contagem de cliques.</li>
+    </ul>
+
+    <h2>Compras</h2>
+    <p>A compra, o pagamento e a entrega acontecem na Shopee ou no Mercado Livre. Os dados informados nesses sites seguem a política de privacidade de cada marketplace.</p>
+
+    <h2>Onde os dados ficam</h2>
+    <p>Os dados ficam armazenados nos provedores que hospedam o site (Vercel e Supabase). As fontes de texto do site são carregadas do Google Fonts.</p>
+
+    <h2>Por quanto tempo</h2>
+    <p>Os dados do cadastro ficam guardados até você pedir a remoção.</p>
+
+    <h2>Seus direitos</h2>
+    <p>Você pode pedir acesso, correção ou exclusão dos seus dados, ou deixar de receber novidades, a qualquer momento, pelo ${whatsapp}.</p>
+  </div>
+</section>`,
+  });
+}
+
+module.exports = { home, listing, product, notFound, unavailable, privacy };

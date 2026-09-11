@@ -9,6 +9,7 @@
   "rewrites": [
     { "source": "/", "destination": "/api/site?page=home" },
     { "source": "/catalogo", "destination": "/api/site?page=catalogo" },
+    { "source": "/privacidade", "destination": "/api/site?page=privacidade" },
     { "source": "/categoria/:slug", "destination": "/api/site?page=categoria&slug=:slug" },
     { "source": "/produto/:slug", "destination": "/api/site?page=produto&slug=:slug" },
     { "source": "/sitemap.xml", "destination": "/api/site?page=sitemap" },

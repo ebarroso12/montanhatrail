@@ -91,7 +91,7 @@ function dashboard() {
         <div class="admin-card-head">
           <div>
             <h2>Visão geral</h2>
-            <p class="hint">Alterações aparecem no site em até 1 minuto.</p>
+            <p class="hint">Alterações aparecem no site em até 2 minutos.</p>
           </div>
           <div class="admin-actions">
             <button class="admin-btn admin-btn-primary" type="button" data-action="new-product">+ Novo produto</button>
@@ -151,7 +151,7 @@ function dashboard() {
     <section class="admin-panel" id="panel-leads" role="tabpanel" aria-labelledby="tab-leads">
       <div class="admin-card">
         <h2>Leads capturados</h2>
-        <p class="hint">Pessoas que deixaram o e-mail no formulário "Seja um alpinista" do site.</p>
+        <p class="hint">Pessoas que deixaram o e-mail no formulário "Seja um alpinista" do site, com consentimento. Se alguém pedir a remoção dos dados, use "Excluir".</p>
         <div id="leads-content"><p class="admin-loading">Carregando…</p></div>
       </div>
     </section>
@@ -223,8 +223,8 @@ function dashboard() {
             <input type="password" id="current-password" autocomplete="current-password" required>
           </div>
           <div class="admin-field">
-            <label for="new-password">Nova senha (mín. 8 caracteres)</label>
-            <input type="password" id="new-password" autocomplete="new-password" minlength="8" required>
+            <label for="new-password">Nova senha (8 a 72 caracteres)</label>
+            <input type="password" id="new-password" autocomplete="new-password" minlength="8" maxlength="72" required>
           </div>
           <div class="admin-form-actions">
             <button type="submit" class="admin-btn admin-btn-primary">Alterar senha</button>
