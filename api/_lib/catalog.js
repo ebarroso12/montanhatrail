@@ -86,7 +86,7 @@ function escapeLike(value) {
 /** Active categories that have at least one visible product, with counts. */
 async function listCategories() {
   const result = await db.query(
-    `SELECT c.id, c.name, c.slug, c.description, count(DISTINCT p.id)::int AS product_count
+    `SELECT c.id, c.name, c.slug, c.description, c.filter_group, count(DISTINCT p.id)::int AS product_count
      FROM categories c
      JOIN product_categories pc ON pc.category_id = c.id
      JOIN products p ON p.id = pc.product_id AND p.active
@@ -100,27 +100,35 @@ async function listCategories() {
     name: row.name,
     slug: row.slug,
     description: row.description || '',
+    group: row.filter_group || 'tipo',
     productCount: row.product_count,
   }));
 }
 
 async function getCategoryBySlug(slug) {
   const result = await db.query(
-    'SELECT id, name, slug, description FROM categories WHERE slug = $1 AND active',
+    'SELECT id, name, slug, description, filter_group FROM categories WHERE slug = $1 AND active',
     [slug]
   );
   const row = result.rows[0];
-  return row ? { id: Number(row.id), name: row.name, slug: row.slug, description: row.description || '' } : null;
+  return row
+    ? { id: Number(row.id), name: row.name, slug: row.slug, description: row.description || '', group: row.filter_group || 'tipo' }
+    : null;
 }
 
 async function listProducts(options) {
-  const { categoryId, featured, search, limit, offset } = options || {};
+  const { categoryId, categoryIds, featured, search, limit, offset } = options || {};
   const where = ['p.active', 'c.active'];
   const params = [];
   if (categoryId) {
     params.push(categoryId);
     where.push(IN_CATEGORY(`$${params.length}`));
   }
+  // Filtros combinados da barra (ex.: Masculino + Casual): o produto precisa estar em todos.
+  (categoryIds || []).forEach((id) => {
+    params.push(id);
+    where.push(IN_CATEGORY(`$${params.length}`));
+  });
   if (featured) where.push('p.featured');
   if (search) {
     params.push(`%${escapeLike(search)}%`);

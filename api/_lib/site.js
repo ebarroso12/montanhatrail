@@ -44,6 +44,10 @@ module.exports = {
     fullWidth: 640,
     fullHeight: 624,
   },
+  // Google Search Console: cole aqui só o código do "content" da meta tag de
+  // verificação (método "Tag HTML") e publique. Vazio = não adiciona a tag.
+  googleSiteVerification: '',
+
   // Imagem padrão ao compartilhar o site (WhatsApp, redes sociais).
   ogImage: '/images/marca/alpins-logo.jpg',
 

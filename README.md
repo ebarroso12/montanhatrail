@@ -68,9 +68,9 @@ Abas:
 
 - **Painel**: números do catálogo.
 - **Produtos**: busca, filtros, criar, editar, ativar/desativar, destacar, excluir com confirmação e visualizar antes de publicar. Produtos novos começam inativos.
-- **Categorias**: criar, editar, ordenar, ativar/desativar, excluir com confirmação digitada.
-- **Leads**: cada cadastro recebido (pop-up e formulário), com Instagram e origem.
-- **Visitantes**: uma linha por pessoa. "Excluir" apaga o visitante e todos os leads do e-mail (pedido de remoção dos dados).
+- **Categorias**: criar, editar, ordenar, ativar/desativar, excluir com confirmação digitada. Cada categoria pertence a um grupo da barra de filtros do site: **Tipo** (Calçados, Mochilas…), **Para quem** (Masculino, Feminino, Infantil) ou **Estilo** (Casual, Esportivo, Luxo, Dia a dia).
+- **Leads**: cada cadastro recebido (pop-up e formulário), com Instagram e origem. Botão **Exportar CSV** (abre no Excel).
+- **Visitantes**: uma linha por pessoa. "Excluir" apaga o visitante e todos os leads do e-mail (pedido de remoção dos dados). Botão **Exportar CSV**.
 - **Cliques**: cliques por produto e marketplace.
 - **Conteúdo**: textos do topo da home e faixa de promoção.
 - **Segurança**: troca de senha.
@@ -104,14 +104,20 @@ Sem as variáveis do Supabase Storage, o painel continua funcionando com URLs de
 
 ## Publicação (ordem recomendada)
 
-1. No Supabase (SQL Editor), rodar as migrations em ordem: `001_catalog.sql`, `002_seed_alpins.sql`, `003_product_categories.sql` e `004_popup_visitors.sql`.
+1. No Supabase (SQL Editor), rodar as migrations em ordem: `001_catalog.sql` até `005_filtros_e_limpeza.sql`.
    - A 001 cria as tabelas, as permissões da role `app_service` e o bucket `products`.
    - A 002 migra os tênis Adventure Trail e Alpha Run para o catálogo, limpa os textos antigos do topo e troca o link antigo do Mercado Livre.
    - A 004 adiciona Instagram e consentimento em `leads` e cria `visitors` e `rate_limits`. **Rode antes do deploy do pop-up**: sem ela o cadastro responde erro.
+   - A 005 cria os grupos da barra de filtros e as categorias Masculino, Feminino, Infantil, Casual, Esportivo, Luxo e Dia a dia, marca os produtos atuais e remove sobras do site antigo (a tabela `product_images`, só se estiver vazia, e chaves de `site_content` que o painel não usa). **Rode antes do deploy dos filtros.**
 2. Na Vercel, adicionar `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`.
 3. Fazer o deploy da branch.
 
 Rodar as migrations antes do deploy evita que o site novo suba sem as tabelas.
+
+## Endereço e Google
+
+- O endereço oficial é `alpins.vercel.app`. Quem abrir `montanhatrail.vercel.app` é redirecionado (308, mesmo caminho) pelo `vercel.json`. Para um domínio próprio, troque o destino desse redirect e a variável `SITE_URL`.
+- Google Search Console: adicione a propriedade "Prefixo do URL" `https://alpins.vercel.app/`, escolha o método **Tag HTML**, cole só o código do `content` em `googleSiteVerification` (`api/_lib/site.js`), publique e clique em Verificar. Depois envie o sitemap `https://alpins.vercel.app/sitemap.xml`.
 
 ## Logomarca
 

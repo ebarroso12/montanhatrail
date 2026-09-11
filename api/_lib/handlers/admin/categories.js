@@ -10,6 +10,7 @@ function toCategory(row) {
     description: row.description || '',
     active: row.active,
     sortOrder: row.sort_order,
+    filterGroup: row.filter_group || 'tipo',
     productCount: row.product_count == null ? 0 : row.product_count,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -24,7 +25,17 @@ function readCategory(body) {
     v.text(body, 'description', { label: 'Descrição', max: 300 }),
     v.bool(body, 'active'),
     v.int(body, 'sortOrder', { label: 'Ordem', min: -100000, max: 100000, default: 0 }),
+    readFilterGroup(body),
   ];
+}
+
+// Grupos da barra de filtros do site (Tipo / Para quem / Estilo).
+const FILTER_GROUPS = new Set(['tipo', 'publico', 'estilo']);
+
+function readFilterGroup(body) {
+  const group = body.filterGroup == null || body.filterGroup === '' ? 'tipo' : String(body.filterGroup);
+  if (!FILTER_GROUPS.has(group)) throw new v.ValidationError('filterGroup', 'Escolha um grupo de filtro válido.');
+  return group;
 }
 
 async function reorder(body, res) {
@@ -63,8 +74,8 @@ module.exports = async (req, res) => {
       return;
     }
     const result = await db.query(
-      `INSERT INTO categories (name, slug, description, active, sort_order)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      `INSERT INTO categories (name, slug, description, active, sort_order, filter_group)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
       readCategory(body)
     );
     res.status(201).json({ category: toCategory(result.rows[0]) });
@@ -85,8 +96,8 @@ module.exports = async (req, res) => {
       result = await db.query('UPDATE categories SET active = $1 WHERE id = $2 RETURNING *', [v.bool(body, 'active'), id]);
     } else {
       result = await db.query(
-        `UPDATE categories SET name = $1, slug = $2, description = $3, active = $4, sort_order = $5
-         WHERE id = $6 RETURNING *`,
+        `UPDATE categories SET name = $1, slug = $2, description = $3, active = $4, sort_order = $5, filter_group = $6
+         WHERE id = $7 RETURNING *`,
         readCategory(body).concat(id)
       );
     }

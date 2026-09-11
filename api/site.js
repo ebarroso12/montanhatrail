@@ -16,6 +16,17 @@ const site = require('./_lib/site');
 
 const PAGE_SIZE = 24;
 
+/** Filtros da barra: ?tipo=calcados&publico=masculino&estilo=casual (um valor por grupo). */
+function readFilters(query, categories) {
+  const filters = {};
+  ['tipo', 'publico', 'estilo'].forEach((group) => {
+    const slug = String(query[group] || '');
+    const category = slug && categories.find((cat) => cat.group === group && cat.slug === slug);
+    if (category) filters[group] = category;
+  });
+  return filters;
+}
+
 function pageNumber(value) {
   const n = Number(value);
   return Number.isInteger(n) && n >= 1 && n <= 1000 ? n : 1;
@@ -56,8 +67,14 @@ const PUBLIC_PAGES = {
     if (ctx.catalogError) throw ctx.catalogError;
     const search = String(req.query.q || '').replace(/\s+/g, ' ').trim().slice(0, 80);
     const page = pageNumber(req.query.pagina);
-    const result = await catalog.listProducts({ search, limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE });
-    sendHtml(res, 200, pages.listing(ctx, { search, page, pageSize: PAGE_SIZE, result }), CACHE.page);
+    const filters = readFilters(req.query, ctx.categories);
+    const result = await catalog.listProducts({
+      search,
+      categoryIds: Object.values(filters).map((cat) => cat.id),
+      limit: PAGE_SIZE,
+      offset: (page - 1) * PAGE_SIZE,
+    });
+    sendHtml(res, 200, pages.listing(ctx, { search, filters, page, pageSize: PAGE_SIZE, result }), CACHE.page);
   },
 
   async categoria(req, res, ctx) {

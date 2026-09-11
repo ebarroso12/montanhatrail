@@ -59,15 +59,70 @@ function productGrid(products, opts) {
   return `<div class="product-grid">${products.map((p) => productCard(p, opts)).join('')}</div>`;
 }
 
-function categoryChips(categories, activeSlug) {
-  if (!categories.length) return '';
-  const chip = (href, label, active, count) =>
-    `<a class="chip${active ? ' is-active' : ''}" href="${href}"${active ? ' aria-current="page"' : ''}>${label}${
-      count != null ? ` <span class="chip-count">${count}</span>` : ''
-    }</a>`;
-  return `<nav class="chip-row" aria-label="Filtrar por categoria">${chip('/catalogo', 'Todos', !activeSlug)}${categories
-    .map((c) => chip(`/categoria/${esc(c.slug)}`, esc(c.name), c.slug === activeSlug, c.productCount))
-    .join('')}</nav>`;
+// Grupos da barra de filtros (coluna categories.filter_group).
+const FILTER_GROUPS = [
+  { key: 'tipo', label: 'Tipo' },
+  { key: 'publico', label: 'Para quem' },
+  { key: 'estilo', label: 'Estilo' },
+];
+
+/**
+ * Barra de filtros do catálogo: uma linha por grupo; cada botão liga ou
+ * desliga o filtro daquele grupo mantendo os outros (e a busca, se houver).
+ * `selected` = { tipo?: categoria, publico?: categoria, estilo?: categoria }.
+ */
+function filterBar(categories, selected, search) {
+  const sel = selected || {};
+  const groups = FILTER_GROUPS.map((g) => ({
+    key: g.key,
+    label: g.label,
+    items: categories.filter((cat) => (cat.group || 'tipo') === g.key),
+  })).filter((g) => g.items.length);
+  if (!groups.length) return '';
+
+  const href = (groupKey, slug) => {
+    const query = new URLSearchParams();
+    if (search) query.set('q', search);
+    FILTER_GROUPS.forEach((g) => {
+      const current = sel[g.key] ? sel[g.key].slug : '';
+      const value = g.key === groupKey ? (current === slug ? '' : slug) : current;
+      if (value) query.set(g.key, value);
+    });
+    const qs = query.toString();
+    return esc(`/catalogo${qs ? `?${qs}` : ''}`);
+  };
+  const anyActive = FILTER_GROUPS.some((g) => sel[g.key]);
+
+  return `<nav class="filter-bar" aria-label="Filtrar produtos">
+  ${groups
+    .map(
+      (g) => `<div class="filter-group" role="group" aria-label="${esc(g.label)}">
+    <span class="filter-label">${esc(g.label)}</span>
+    <div class="chip-row">${g.items
+      .map((cat) => {
+        const active = !!sel[g.key] && sel[g.key].slug === cat.slug;
+        return `<a class="chip${active ? ' is-active' : ''}" href="${href(g.key, cat.slug)}"${active ? ' aria-current="true"' : ''}>${esc(cat.name)}${
+          active ? ' <span aria-hidden="true">✕</span><span class="sr-only"> (remover filtro)</span>' : ''
+        }</a>`;
+      })
+      .join('')}</div>
+  </div>`
+    )
+    .join('')}
+  ${anyActive || search ? '<a class="filter-clear" href="/catalogo">Limpar filtros</a>' : ''}
+</nav>`;
+}
+
+/** Cartões de categoria agrupados por Tipo / Para quem / Estilo (home). */
+function categoryGroups(categories) {
+  return FILTER_GROUPS.map((g) => {
+    const items = categories.filter((cat) => (cat.group || 'tipo') === g.key);
+    if (!items.length) return '';
+    return `<div class="category-group">
+  <h3 class="category-group-title">${esc(g.label)}</h3>
+  ${categoryCards(items)}
+</div>`;
+  }).join('');
 }
 
 function categoryCards(categories) {
@@ -130,8 +185,10 @@ module.exports = {
   marketplaceButtons,
   productCard,
   productGrid,
-  categoryChips,
+  FILTER_GROUPS,
+  filterBar,
   categoryCards,
+  categoryGroups,
   searchForm,
   pagination,
   emptyState,

@@ -87,6 +87,9 @@ body.admin-body{min-height:100vh;display:flex;flex-direction:column;background:v
 .admin-check{display:flex;align-items:center;gap:10px;min-height:40px;font-size:.92rem;cursor:pointer}
 .admin-check input{width:18px;height:18px;margin:0;flex:none;accent-color:var(--brown)}
 .admin-check input:disabled + span{color:var(--ink-soft)}
+.admin-check-group{grid-column:1 / -1;margin:10px 0 0;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--brown)}
+.admin-check-group:first-child{margin-top:0}
+.admin-card-head h2{margin:0}
 .admin-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
 .admin-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:0 16px;align-items:end}
 .admin-fieldset{border:1px solid var(--line);border-radius:4px;padding:14px 16px 6px;margin:4px 0 18px;background:rgba(255,255,255,.4)}

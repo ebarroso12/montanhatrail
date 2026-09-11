@@ -1,6 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "montanhatrail.vercel.app" }],
+      "destination": "https://alpins.vercel.app/:path*",
+      "permanent": true
+    },
     { "source": "/index.html", "destination": "/", "permanent": true },
     { "source": "/alpha-run.html", "destination": "/produto/tenis-alpha-run", "permanent": true },
     { "source": "/admin/index.html", "destination": "/admin/login", "permanent": false },

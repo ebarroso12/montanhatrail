@@ -347,6 +347,7 @@
         h('div', { class: 'admin-row-main' }, [
           h('p', { class: 'admin-row-title', text: cat.name }),
           h('div', { class: 'admin-row-meta' }, [
+            h('span', { class: 'pill', text: GROUP_LABELS[cat.filterGroup] || 'Tipo' }),
             h('span', { text: '/categoria/' + cat.slug }),
             h('span', { text: plural(cat.productCount, 'produto', 'produtos') }),
             h('span', { class: 'pill ' + (cat.active ? 'pill-on' : 'pill-off'), text: cat.active ? 'Ativa' : 'Inativa' }),
@@ -426,6 +427,7 @@
     form.elements.name.value = cat ? cat.name : '';
     form.elements.slug.value = cat ? cat.slug : '';
     form.elements.description.value = cat ? cat.description : '';
+    form.elements.filterGroup.value = cat ? cat.filterGroup || 'tipo' : 'tipo';
     form.elements.active.checked = cat ? cat.active : true;
     var maxOrder = state.categories.reduce(function (max, c) { return Math.max(max, c.sortOrder); }, 0);
     form.elements.sortOrder.value = cat ? cat.sortOrder : maxOrder + 10;
@@ -462,6 +464,7 @@
           name: form.elements.name.value,
           slug: form.elements.slug.value,
           description: form.elements.description.value,
+          filterGroup: form.elements.filterGroup.value,
           active: form.elements.active.checked,
           sortOrder: form.elements.sortOrder.value,
         },
@@ -798,18 +801,28 @@
     });
   }
 
-  /** Checkboxes "Também aparece em": the main category is always checked and locked. */
+  var GROUP_LABELS = { tipo: 'Tipo', publico: 'Para quem', estilo: 'Estilo' };
+
+  /**
+   * Checkboxes "Também aparece em", separados por grupo do filtro
+   * (Tipo / Para quem / Estilo). A categoria principal fica marcada e travada.
+   */
   function renderCategoryChecks(selected) {
     var box = $('p-categories');
     var mainId = $('p-category').value;
     clear(box);
-    state.categories.forEach(function (cat) {
-      var id = String(cat.id);
-      var isMain = id === mainId;
-      box.appendChild(h('label', { class: 'admin-check', for: 'p-cat-' + id }, [
-        h('input', { type: 'checkbox', id: 'p-cat-' + id, value: id, checked: isMain || selected.indexOf(id) !== -1, disabled: isMain }),
-        h('span', { text: cat.name + (cat.active ? '' : ' (inativa)') + (isMain ? ' — principal' : '') }),
-      ]));
+    ['tipo', 'publico', 'estilo'].forEach(function (group) {
+      var items = state.categories.filter(function (cat) { return (cat.filterGroup || 'tipo') === group; });
+      if (!items.length) return;
+      box.appendChild(h('p', { class: 'admin-check-group', text: GROUP_LABELS[group] }));
+      items.forEach(function (cat) {
+        var id = String(cat.id);
+        var isMain = id === mainId;
+        box.appendChild(h('label', { class: 'admin-check', for: 'p-cat-' + id }, [
+          h('input', { type: 'checkbox', id: 'p-cat-' + id, value: id, checked: isMain || selected.indexOf(id) !== -1, disabled: isMain }),
+          h('span', { text: cat.name + (cat.active ? '' : ' (inativa)') + (isMain ? ' — principal' : '') }),
+        ]));
+      });
     });
   }
 

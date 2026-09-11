@@ -151,7 +151,7 @@ function dashboard() {
     <!-- LEADS -->
     <section class="admin-panel" id="panel-leads" role="tabpanel" aria-labelledby="tab-leads">
       <div class="admin-card">
-        <h2>Leads capturados</h2>
+        <div class="admin-card-head"><h2>Leads capturados</h2><a class="admin-btn admin-btn-outline admin-btn-sm" href="/api/admin/leads?format=csv">Exportar CSV</a></div>
         <p class="hint">Cada cadastro recebido pelo pop-up de entrada ou pelo formulário "Seja um alpinista", sempre com consentimento. Para apagar todos os dados de uma pessoa, use "Excluir" na aba Visitantes.</p>
         <div id="leads-content"><p class="admin-loading">Carregando…</p></div>
       </div>
@@ -160,7 +160,7 @@ function dashboard() {
     <!-- VISITANTES -->
     <section class="admin-panel" id="panel-visitantes" role="tabpanel" aria-labelledby="tab-visitantes">
       <div class="admin-card">
-        <h2>Visitantes cadastrados</h2>
+        <div class="admin-card-head"><h2>Visitantes cadastrados</h2><a class="admin-btn admin-btn-outline admin-btn-sm" href="/api/admin/visitors?format=csv">Exportar CSV</a></div>
         <p class="hint">Uma linha por pessoa (e-mail), com nome, Instagram e quantas vezes se cadastrou. Se alguém pedir a remoção dos dados, use "Excluir": apaga o visitante e todos os leads desse e-mail.</p>
         <div id="visitors-content"><p class="admin-loading">Carregando…</p></div>
       </div>
@@ -403,6 +403,14 @@ function dashboard() {
       <div class="admin-field">
         <label for="c-description">Descrição (opcional)</label>
         <textarea id="c-description" name="description" rows="2" maxlength="300"></textarea>
+      </div>
+      <div class="admin-field">
+        <label for="c-group">Grupo na barra de filtros do site</label>
+        <select id="c-group" name="filterGroup">
+          <option value="tipo">Tipo de produto (ex.: Calçados, Mochilas)</option>
+          <option value="publico">Para quem (ex.: Masculino, Feminino, Infantil)</option>
+          <option value="estilo">Estilo (ex.: Casual, Esportivo, Luxo, Dia a dia)</option>
+        </select>
       </div>
       <div class="admin-grid-2">
         <div class="admin-field checkbox">

@@ -187,7 +187,16 @@ p{margin:0 0 16px;line-height:1.65}
 .category-count{margin-top:auto;padding-top:10px;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--brown)}
 
 .chip-row{display:flex;flex-wrap:wrap;gap:8px}
-#catalogo .chip-row{margin-bottom:28px}
+#catalogo .filter-bar{margin-bottom:28px}
+
+/* barra de filtros: uma linha por grupo (Tipo / Para quem / Estilo) */
+.filter-bar{display:flex;flex-direction:column;gap:12px}
+.filter-group{display:flex;align-items:center;gap:14px}
+.filter-label{flex:none;width:88px;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--ink-soft)}
+.filter-group .chip-row{flex:1;min-width:0}
+.filter-clear{align-self:flex-start;font-size:.8rem;font-weight:600;color:var(--brown);text-decoration:underline;text-underline-offset:3px}
+.category-group + .category-group{margin-top:30px}
+.category-group-title{font-family:var(--sans);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--ink-soft);margin:0 0 12px}
 .chip{
   display:inline-flex;align-items:center;gap:6px;padding:9px 14px;white-space:nowrap;
   border:1px solid var(--line);border-radius:999px;background:var(--cream);
@@ -431,6 +440,8 @@ p{margin:0 0 16px;line-height:1.65}
   .market-actions-card .btn{flex:none;width:100%;padding:10px 6px;font-size:.64rem}
   .badge{top:8px;left:8px;padding:4px 7px;font-size:.66rem}
   .chip-row{flex-wrap:nowrap;overflow-x:auto;margin:0 -20px;padding:2px 20px 8px;scrollbar-width:none}
+  .filter-group{flex-direction:column;align-items:stretch;gap:4px}
+  .filter-label{width:auto}
   .chip-row::-webkit-scrollbar{display:none}
   .search-form{max-width:none}
   .pagination .btn{padding:10px 12px}

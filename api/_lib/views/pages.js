@@ -111,7 +111,7 @@ function home(ctx, data) {
     </div>
     ${
       ctx.categories.length
-        ? c.categoryCards(ctx.categories)
+        ? c.categoryGroups(ctx.categories)
         : c.emptyState('Categorias em breve', 'As categorias aparecem aqui assim que os primeiros produtos forem publicados.')
     }
   </div>
@@ -134,7 +134,7 @@ function home(ctx, data) {
   else if (!latest.items.length) {
     catalogBody = c.emptyState('Novos produtos em breve', 'Estamos preparando o catálogo. Enquanto isso, fale com a gente pelo WhatsApp.');
   } else {
-    catalogBody = `${c.categoryChips(ctx.categories, '')}
+    catalogBody = `${c.filterBar(ctx.categories, {}, '')}
     ${c.productGrid(latest.items)}
     ${
       latest.total > latest.items.length
@@ -214,9 +214,18 @@ function breadcrumb(items) {
 /** /catalogo (with optional search) and /categoria/:slug. */
 function listing(ctx, data) {
   const { category, search, page, pageSize, result } = data;
+  const filters = category ? { [category.group || 'tipo']: category } : data.filters || {};
+  const filterNames = c.FILTER_GROUPS.map((g) => filters[g.key]).filter(Boolean).map((cat) => cat.name);
+  const hasFilters = !category && filterNames.length > 0;
   const totalPages = Math.max(1, Math.ceil(result.total / pageSize));
   const basePath = category ? `/categoria/${category.slug}` : '/catalogo';
-  const params = search ? { q: search } : {};
+  const params = {};
+  if (search) params.q = search;
+  if (hasFilters) {
+    c.FILTER_GROUPS.forEach((g) => {
+      if (filters[g.key]) params[g.key] = filters[g.key].slug;
+    });
+  }
 
   let heading;
   let intro;
@@ -226,6 +235,9 @@ function listing(ctx, data) {
   } else if (search) {
     heading = `Resultados para <em>“${esc(search)}”</em>`;
     intro = `${result.total} ${result.total === 1 ? 'produto encontrado' : 'produtos encontrados'}.`;
+  } else if (hasFilters) {
+    heading = esc(filterNames.join(' · '));
+    intro = `${result.total} ${result.total === 1 ? 'produto encontrado' : 'produtos encontrados'}.`;
   } else {
     heading = 'Catálogo <em>completo.</em>';
     intro = 'Todos os produtos da Alpins, organizados por categoria.';
@@ -234,6 +246,12 @@ function listing(ctx, data) {
   let body;
   if (result.items.length) {
     body = `${c.productGrid(result.items)}${c.pagination(basePath, page, totalPages, params)}`;
+  } else if (hasFilters) {
+    body = c.emptyState(
+      'Nenhum produto com esses filtros',
+      'Tente remover algum filtro ou veja o catálogo completo.',
+      '<a class="btn btn-dark btn-sm" href="/catalogo">Limpar filtros</a>'
+    );
   } else if (search) {
     body = c.emptyState(
       'Nenhum produto encontrado',
@@ -252,6 +270,7 @@ function listing(ctx, data) {
 
   const crumbs = [{ label: 'Início', href: '/' }];
   if (category) crumbs.push({ label: 'Catálogo', href: '/catalogo' }, { label: category.name });
+  else if (hasFilters) crumbs.push({ label: 'Catálogo', href: '/catalogo' }, { label: filterNames.join(' · ') });
   else crumbs.push({ label: 'Catálogo' });
 
   const content = `${pageHead({
@@ -263,7 +282,7 @@ function listing(ctx, data) {
 <section class="section section-sand section-tight">
   <div class="wrap">
     <div class="listing-toolbar">
-      ${c.categoryChips(ctx.categories, category ? category.slug : '')}
+      ${c.filterBar(ctx.categories, filters, search)}
       ${c.searchForm(search)}
     </div>
     ${body}
@@ -273,13 +292,20 @@ function listing(ctx, data) {
   const pageSuffix = page > 1 ? ` — página ${page}` : '';
   return layout({
     ctx,
-    title: category ? `${category.name}${pageSuffix}` : search ? `Busca: ${search}` : `Catálogo${pageSuffix}`,
+    title: category
+      ? `${category.name}${pageSuffix}`
+      : search
+        ? `Busca: ${search}`
+        : hasFilters
+          ? `${filterNames.join(' · ')}${pageSuffix}`
+          : `Catálogo${pageSuffix}`,
     description: category
       ? category.description || `Produtos da categoria ${category.name} no catálogo Alpins.`
       : 'Catálogo completo da Alpins, com links diretos para a Shopee e o Mercado Livre.',
     path: basePath + (page > 1 ? `?pagina=${page}` : ''),
     // Busca e listagens vazias (categoria sem produtos, página além do fim) ficam fora do Google.
-    noindex: !!search || !result.items.length,
+    // Combinações de filtros também (o canonical fica em /catalogo).
+    noindex: !!search || hasFilters || !result.items.length,
     bodyClass: 'page-listing',
     content,
   });
@@ -459,6 +485,12 @@ function privacy(ctx) {
       <li>Entender quais produtos despertam mais interesse, por meio da contagem de cliques.</li>
     </ul>
 
+    <h2>Base legal</h2>
+    <p>O envio de novidades depende do seu consentimento, dado ao marcar a caixa do cadastro (art. 7º, I, da LGPD). A contagem de cliques e a proteção contra envios automáticos servem ao funcionamento e à segurança do site, sem identificar você.</p>
+
+    <h2>Compartilhamento</h2>
+    <p>A ${esc(site.name)} não vende, não aluga e não repassa os seus dados para terceiros fazerem publicidade. Eles só ficam nos provedores que mantêm o site funcionando, listados abaixo.</p>
+
     <h2>Compras</h2>
     <p>A compra, o pagamento e a entrega acontecem na Shopee ou no Mercado Livre. Os dados informados nesses sites seguem a política de privacidade de cada marketplace.</p>
 
@@ -469,7 +501,7 @@ function privacy(ctx) {
     <p>Os dados do cadastro ficam guardados até você pedir a remoção ou retirar o consentimento. Ao pedir a exclusão, apagamos todos os cadastros feitos com o seu e-mail.</p>
 
     <h2>Seus direitos</h2>
-    <p>Você pode pedir acesso, correção ou exclusão dos seus dados, ou deixar de receber novidades, a qualquer momento, pelo ${whatsapp}.</p>
+    <p>Você pode pedir acesso, correção ou exclusão dos seus dados, ou deixar de receber novidades, a qualquer momento, pelo ${whatsapp}. Retirar o consentimento não afeta o que foi feito antes do pedido. Se não ficar satisfeito com a resposta, você também pode procurar a Autoridade Nacional de Proteção de Dados (ANPD).</p>
   </div>
 </section>`,
   });

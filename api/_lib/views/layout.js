@@ -162,6 +162,7 @@ ${opts.noindex ? '<meta name="robots" content="noindex, follow">' : `<link rel="
 <meta property="og:image" content="${esc(image)}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#14170f">
+${site.googleSiteVerification ? `<meta name="google-site-verification" content="${esc(site.googleSiteVerification)}">` : ''}
 ${FONTS}
 <link rel="stylesheet" href="/css/style.css">
 <link rel="icon" type="image/png" href="${FAVICON}">

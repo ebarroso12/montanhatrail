@@ -1,5 +1,6 @@
 const db = require('../../db');
 const { id: toId } = require('../../validate');
+const { sendCsv } = require('../../csv');
 
 function toVisitor(row) {
   return {
@@ -22,6 +23,21 @@ function toVisitor(row) {
  * leads do mesmo e-mail (pedido de remoção dos dados, LGPD).
  */
 module.exports = async (req, res) => {
+  if (req.method === 'GET' && req.query.format === 'csv') {
+    const all = await db.query(
+      `SELECT updated_at, created_at, name, email, instagram, signups, first_source, last_source, consent_at, consent_version
+       FROM visitors ORDER BY updated_at DESC LIMIT 50000`
+    );
+    const origin = (s) => (s === 'popup' ? 'Pop-up' : 'Formulário do site');
+    sendCsv(
+      res,
+      'alpins-visitantes',
+      ['Último cadastro', 'Primeiro cadastro', 'Nome', 'E-mail', 'Instagram', 'Cadastros', 'Primeira origem', 'Última origem', 'Consentimento em', 'Versão do aviso'],
+      all.rows.map((r) => [r.updated_at, r.created_at, r.name, r.email, r.instagram ? `https://instagram.com/${r.instagram}` : '', r.signups, origin(r.first_source), origin(r.last_source), r.consent_at, r.consent_version])
+    );
+    return;
+  }
+
   if (req.method === 'GET') {
     const result = await db.query(
       `SELECT id, name, email, instagram, first_source, last_source, signups, consent_version, created_at, updated_at,
