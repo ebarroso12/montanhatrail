@@ -104,11 +104,11 @@ Sem as variáveis do Supabase Storage, o painel continua funcionando com URLs de
 
 ## Publicação (ordem recomendada)
 
-1. No Supabase (SQL Editor), rodar as migrations em ordem: `001_catalog.sql` até `005_filtros_e_limpeza.sql`.
+1. No Supabase (SQL Editor), rodar as migrations em ordem: `001_catalog.sql` até `005_filtros_e_limpeza.sql` (a `006_remover_product_images.sql` é opcional: só depois de a conferência da 005 mostrar a tabela antiga vazia).
    - A 001 cria as tabelas, as permissões da role `app_service` e o bucket `products`.
    - A 002 migra os tênis Adventure Trail e Alpha Run para o catálogo, limpa os textos antigos do topo e troca o link antigo do Mercado Livre.
    - A 004 adiciona Instagram e consentimento em `leads` e cria `visitors` e `rate_limits`. **Rode antes do deploy do pop-up**: sem ela o cadastro responde erro.
-   - A 005 cria os grupos da barra de filtros e as categorias Masculino, Feminino, Infantil, Casual, Esportivo, Luxo e Dia a dia, marca os produtos atuais e remove sobras do site antigo (a tabela `product_images`, só se estiver vazia, e chaves de `site_content` que o painel não usa). **Rode antes do deploy dos filtros.**
+   - A 005 cria os grupos da barra de filtros e as categorias Masculino, Feminino, Infantil, Casual, Esportivo, Luxo e Dia a dia, marca os produtos atuais e remove as chaves de `site_content` que o painel não usa. A conferência mostra o tamanho da tabela antiga `product_images` (0 ou vazio = pode rodar a 006). **Rode antes do deploy dos filtros.**
 2. Na Vercel, adicionar `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`.
 3. Fazer o deploy da branch.
 

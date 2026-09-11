@@ -1,6 +1,7 @@
 -- 005_filtros_e_limpeza.sql — Grupos da barra de filtros (Tipo / Para quem /
--- Estilo), categorias novas, marcação dos produtos atuais e limpeza do que
--- sobrou do site antigo. Pode rodar mais de uma vez.
+-- Estilo), categorias novas, marcação dos produtos atuais e limpeza dos
+-- textos do site antigo. Pode rodar mais de uma vez. SQL simples (sem blocos
+-- DO), para colar no SQL Editor sem quebrar.
 -- Rodar no SQL Editor do Supabase ANTES do deploy desta versão.
 
 BEGIN;
@@ -8,17 +9,12 @@ BEGIN;
 ALTER TABLE public.categories
   ADD COLUMN IF NOT EXISTS filter_group text NOT NULL DEFAULT 'tipo';
 
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conname = 'categories_filter_group_check'
-  ) THEN
-    ALTER TABLE public.categories
-      ADD CONSTRAINT categories_filter_group_check
-      CHECK (filter_group IN ('tipo', 'publico', 'estilo'));
-  END IF;
-END $$;
+ALTER TABLE public.categories
+  DROP CONSTRAINT IF EXISTS categories_filter_group_check;
+
+ALTER TABLE public.categories
+  ADD CONSTRAINT categories_filter_group_check
+  CHECK (filter_group IN ('tipo', 'publico', 'estilo'));
 
 INSERT INTO public.categories
   (name, slug, description, filter_group, active, sort_order)
@@ -50,18 +46,6 @@ JOIN public.categories c ON (p.slug, c.slug) IN (
 )
 ON CONFLICT DO NOTHING;
 
--- Limpeza: tabela de fotos do site antigo (só se estiver vazia).
-DO $$
-BEGIN
-  IF to_regclass('public.product_images') IS NOT NULL THEN
-    IF EXISTS (SELECT 1 FROM public.product_images) THEN
-      RAISE NOTICE 'product_images tem fotos: mantida.';
-    ELSE
-      DROP TABLE public.product_images;
-    END IF;
-  END IF;
-END $$;
-
 -- Limpeza: textos antigos (links, preços e flags do site antigo).
 -- Ficam só as chaves editáveis no painel (aba Conteúdo).
 DELETE FROM public.site_content
@@ -72,9 +56,12 @@ WHERE key NOT IN (
 
 COMMIT;
 
--- Conferência (esperado: 8 | 13 | true | 6 ou menos)
+-- Conferência. Esperado: 8 | 13 | 6 ou menos | 0 ou vazio.
+-- tabela_antiga_bytes = 0 ou vazio: a tabela antiga de fotos está vazia
+-- (ou já não existe) e pode ser removida com a 006.
 SELECT
   (SELECT count(*) FROM public.categories) AS categorias,
   (SELECT count(*) FROM public.product_categories) AS marcacoes,
-  to_regclass('public.product_images') IS NULL AS fotos_antigas_removidas,
-  (SELECT count(*) FROM public.site_content) AS textos;
+  (SELECT count(*) FROM public.site_content) AS textos,
+  pg_relation_size(to_regclass('public.product_images'))
+    AS tabela_antiga_bytes;
