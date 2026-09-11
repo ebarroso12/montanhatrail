@@ -44,8 +44,11 @@ function brandInner(variant) {
   if (logo && variant === 'footer') {
     return `<img class="brand-logo-full" src="${esc(logo.full)}" alt="${esc(site.name)} — Fé, esporte e montanha. Viva forte." width="${Number(logo.fullWidth) || ''}" height="${Number(logo.fullHeight) || ''}" loading="lazy" decoding="async">`;
   }
+  if (logo && logo.headerSymbol && logo.wordmark) {
+    return `<img class="brand-symbol" src="${esc(logo.headerSymbol)}" alt="" width="196" height="183"><img class="brand-wordmark" src="${esc(logo.wordmark)}" alt="" width="611" height="96">`;
+  }
   const mark = logo
-    ? `<img class="brand-symbol" src="${esc(logo.symbol)}" alt="" width="48" height="48">`
+    ? `<img class="brand-symbol-square" src="${esc(logo.symbol)}" alt="" width="48" height="48">`
     : `<svg viewBox="0 0 24 24" class="brand-mark" aria-hidden="true" focusable="false"><path d="${MOUNTAIN_PATH}" fill="currentColor"/></svg>`;
   return `${mark}<span class="brand-word">ALPINS</span>`;
 }

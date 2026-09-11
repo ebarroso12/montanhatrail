@@ -31,10 +31,14 @@ module.exports = {
   siteUrl,
 
   // Logomarca oficial (arte original: /images/marca/alpins-logo.jpg).
-  // symbol: recorte do "A" usado no cabeçalho, ao lado do nome em texto.
+  // headerSymbol + wordmark: "A" e nome ALPINS metálicos, com bordas esfumadas
+  // (WebP transparente), lado a lado no cabeçalho.
+  // symbol: recorte quadrado do "A" (painel administrativo).
   // full: logo com nome e slogan, usada no rodapé.
   // Para trocar, substitua os arquivos mantendo os nomes (ou ajuste os caminhos aqui).
   logo: {
+    headerSymbol: '/images/marca/alpins-simbolo-topo.webp',
+    wordmark: '/images/marca/alpins-nome.webp',
     symbol: '/images/marca/alpins-simbolo.jpg',
     full: '/images/marca/alpins-logo-rodape.jpg',
     fullWidth: 640,
