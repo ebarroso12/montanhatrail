@@ -364,6 +364,35 @@ p{margin:0 0 16px;line-height:1.65}
 .admin-msg-success{background:rgba(120,150,90,.16);color:#3c5a2a;border:1px solid rgba(120,150,90,.32)}
 .admin-msg[hidden]{display:none}
 
+/* ---------- pop-up de cadastro ---------- */
+.lead-popup{
+  border:0;padding:0;margin:auto;background:transparent;color:var(--ink);
+  width:min(440px,calc(100vw - 24px));max-width:none;
+  max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);overflow:visible;
+}
+.lead-popup::backdrop{background:rgba(10,12,8,.72)}
+.lead-popup-card{
+  position:relative;background:var(--card);border-radius:var(--radius);padding:34px 28px 18px;
+  max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);overflow-y:auto;
+  box-shadow:0 30px 60px rgba(0,0,0,.35);
+}
+.lead-popup-card h2{font-size:clamp(1.5rem,5vw,1.9rem);margin:0 0 8px;padding-right:36px}
+.lead-popup-text{color:var(--ink-soft);font-size:.95rem;margin:0 0 18px}
+.lead-popup-close{
+  position:absolute;top:10px;right:10px;width:44px;height:44px;border:0;border-radius:50%;
+  background:none;color:var(--ink);font-size:1.1rem;cursor:pointer;
+}
+.lead-popup-close:hover{background:rgba(0,0,0,.06)}
+.lead-popup .field-row{margin-bottom:14px}
+.lead-popup .field-row input{padding:12px 14px;font-size:1rem}
+.lead-popup .consent{margin:4px 0 14px}
+.lead-popup-later{
+  display:block;margin:8px auto 0;padding:10px 14px;border:0;background:none;cursor:pointer;
+  font:inherit;font-size:.85rem;color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px;
+}
+.field-row-prefix span{display:flex;align-items:center;padding-left:16px;color:var(--ink-soft);font-weight:600}
+.field-row.field-row-prefix input{padding-left:4px}
+
 /* ---------- responsive ---------- */
 @media (max-width:900px){
   .header-inner{gap:14px;height:64px}

@@ -42,10 +42,13 @@ function leadSection() {
 
       <form id="lead-form" novalidate>
         <label class="field-label" for="lead-name">Seu nome de alpinista (opcional)</label>
-        <div class="field-row"><input type="text" id="lead-name" name="name" autocomplete="name" maxlength="200"></div>
+        <div class="field-row"><input type="text" id="lead-name" name="name" autocomplete="name" maxlength="120"></div>
 
         <label class="field-label" for="lead-email">E-mail</label>
-        <div class="field-row"><input type="email" id="lead-email" name="email" autocomplete="email" maxlength="200" required></div>
+        <div class="field-row"><input type="email" id="lead-email" name="email" autocomplete="email" maxlength="254" required></div>
+
+        <label class="field-label" for="lead-instagram">Instagram (opcional)</label>
+        <div class="field-row field-row-prefix"><span aria-hidden="true">@</span><input type="text" id="lead-instagram" name="instagram" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="60" placeholder="seuperfil"></div>
 
         <!-- honeypot: hidden from real people, only bots tend to fill this in -->
         <div class="hp-field" aria-hidden="true">
@@ -55,7 +58,7 @@ function leadSection() {
 
         <label class="consent" for="lead-consent">
           <input type="checkbox" id="lead-consent" name="consent" required>
-          <span>Quero receber novidades da Alpins por e-mail e concordo com o <a href="/privacidade">aviso de privacidade</a>. Posso pedir a remoção dos meus dados quando quiser.</span>
+          <span>Quero receber novidades da Alpins por e-mail ou pelo Instagram e concordo com o <a href="/privacidade">aviso de privacidade</a>. Posso pedir a remoção dos meus dados quando quiser.</span>
         </label>
 
         <button type="submit" class="btn btn-dark btn-block" id="lead-submit">Quero ser alpinista</button>
@@ -380,6 +383,8 @@ ${
     image: p.mainImageUrl,
     ogType: 'product',
     noindex: !!data.preview,
+    // Na pré-visualização do painel o pop-up de cadastro só atrapalharia.
+    leadPopup: !data.preview,
     bodyClass: 'page-product',
     content,
   });
@@ -391,6 +396,7 @@ function notFound(ctx) {
     title: 'Página não encontrada',
     description: 'A página procurada não existe ou o produto não está mais disponível.',
     noindex: true,
+    leadPopup: false,
     bodyClass: 'page-error',
     content: pageHead({
       eyebrow: 'Erro 404',
@@ -410,6 +416,7 @@ function unavailable(ctx) {
     ctx,
     title: 'Catálogo indisponível',
     noindex: true,
+    leadPopup: false,
     bodyClass: 'page-error',
     content: `${pageHead({ eyebrow: 'Instabilidade', heading: 'Voltamos <em>em instantes.</em>' })}
 <section class="section section-cream section-tight"><div class="wrap">${unavailableNotice()}</div></section>`,
@@ -424,6 +431,8 @@ function privacy(ctx) {
     title: 'Aviso de privacidade',
     description: 'Como a Alpins trata os dados de quem visita o site e se cadastra para receber novidades.',
     path: '/privacidade',
+    // Quem veio ler o aviso (inclusive pelo link do pop-up) não deve ser interrompido por ele.
+    leadPopup: false,
     bodyClass: 'page-legal',
     content: `${pageHead({
       breadcrumb: breadcrumb([{ label: 'Início', href: '/' }, { label: 'Aviso de privacidade' }]),
@@ -438,14 +447,15 @@ function privacy(ctx) {
 
     <h2>Quais dados coletamos</h2>
     <ul>
-      <li><strong>Formulário "Seja um alpinista":</strong> nome (opcional) e e-mail, com a data do cadastro.</li>
+      <li><strong>Cadastro de novidades (janela que aparece ao entrar no site e formulário "Seja um alpinista"):</strong> nome, e-mail e, se você informar, o perfil do Instagram, com a data do cadastro, por onde ele foi feito e a versão deste aviso que você aceitou. Na janela o nome é obrigatório; no formulário, opcional.</li>
       <li><strong>Cliques nos botões de compra:</strong> qual produto e qual marketplace foram clicados e em qual página, sem nome, e-mail ou outro dado que identifique você.</li>
-      <li><strong>Cookies:</strong> o site não usa cookies de rastreamento nem de publicidade. O único cookie é o de login da área administrativa.</li>
+      <li><strong>Proteção contra envios automáticos:</strong> para limitar abusos no cadastro e na contagem de cliques, guardamos por até 1 dia um código calculado a partir do endereço IP. O IP em si não é guardado.</li>
+      <li><strong>Cookies e armazenamento no navegador:</strong> o site não usa cookies de rastreamento nem de publicidade. O único cookie é o de login da área administrativa. No seu navegador fica guardado apenas se a janela de cadastro já foi preenchida ou fechada, para não mostrá-la de novo.</li>
     </ul>
 
     <h2>Para que usamos</h2>
     <ul>
-      <li>Enviar novidades, lançamentos e ofertas do catálogo para quem se cadastrou e deu consentimento.</li>
+      <li>Enviar novidades, lançamentos e ofertas do catálogo, por e-mail ou por mensagem no Instagram (se você o informou), para quem se cadastrou e deu consentimento.</li>
       <li>Entender quais produtos despertam mais interesse, por meio da contagem de cliques.</li>
     </ul>
 
@@ -456,7 +466,7 @@ function privacy(ctx) {
     <p>Os dados ficam armazenados nos provedores que hospedam o site (Vercel e Supabase). As fontes de texto do site são carregadas do Google Fonts.</p>
 
     <h2>Por quanto tempo</h2>
-    <p>Os dados do cadastro ficam guardados até você pedir a remoção.</p>
+    <p>Os dados do cadastro ficam guardados até você pedir a remoção ou retirar o consentimento. Ao pedir a exclusão, apagamos todos os cadastros feitos com o seu e-mail.</p>
 
     <h2>Seus direitos</h2>
     <p>Você pode pedir acesso, correção ou exclusão dos seus dados, ou deixar de receber novidades, a qualquer momento, pelo ${whatsapp}.</p>

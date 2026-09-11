@@ -11,7 +11,7 @@ module.exports = async (req, res) => {
 
   if (req.method === 'GET') {
     const result = await db.query(
-      'SELECT id, name, email, source, created_at FROM leads ORDER BY created_at DESC LIMIT 500'
+      'SELECT id, name, email, instagram, source, consent_version, created_at FROM leads ORDER BY created_at DESC LIMIT 500'
     );
     res.status(200).json({ leads: result.rows || [] });
     return;

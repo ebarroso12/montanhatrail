@@ -175,6 +175,7 @@ ${header()}
 ${opts.content}
 </main>
 ${footer(ctx)}
+${opts.leadPopup === false ? '' : leadPopup()}
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Imagem ampliada" hidden>
   <button class="lightbox-close" id="lightbox-close" type="button" aria-label="Fechar">✕</button>
   <img id="lightbox-img" alt="">
@@ -182,6 +183,48 @@ ${footer(ctx)}
 <script src="/js/main.js" defer></script>
 </body>
 </html>`;
+}
+
+/**
+ * Pop-up de cadastro ("clube dos alpinistas"). Vai fechado no HTML; o
+ * js/main.js abre ao entrar no site e envia para /api/leads (source "popup"),
+ * que grava em leads e visitors.
+ */
+function leadPopup() {
+  return `<dialog class="lead-popup" id="popup" aria-labelledby="popup-title" aria-describedby="popup-text">
+  <form class="lead-popup-card" id="popup-form" novalidate>
+    <button type="button" class="lead-popup-close" data-popup-close aria-label="Fechar">✕</button>
+    <p class="eyebrow"><span class="rule"></span>Clube dos alpinistas</p>
+    <h2 id="popup-title">Entre para o <em>clube ${esc(site.name)}.</em></h2>
+    <p class="lead-popup-text" id="popup-text">Cadastre-se para receber novidades, lançamentos e ofertas do catálogo em primeira mão.</p>
+    <div class="admin-msg admin-msg-success" id="popup-success" role="status" hidden>Cadastro feito! Bem-vindo ao clube, alpinista.</div>
+    <div class="admin-msg admin-msg-error" id="popup-error" role="alert" hidden></div>
+    <div id="popup-fields">
+      <label class="field-label" for="popup-name">Nome</label>
+      <div class="field-row"><input type="text" id="popup-name" name="name" autocomplete="name" maxlength="120" required></div>
+
+      <label class="field-label" for="popup-email">E-mail</label>
+      <div class="field-row"><input type="email" id="popup-email" name="email" autocomplete="email" maxlength="254" required></div>
+
+      <label class="field-label" for="popup-instagram">Instagram (opcional)</label>
+      <div class="field-row field-row-prefix"><span aria-hidden="true">@</span><input type="text" id="popup-instagram" name="instagram" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="60" placeholder="seuperfil"></div>
+
+      <!-- honeypot: hidden from real people, only bots tend to fill this in -->
+      <div class="hp-field" aria-hidden="true">
+        <label for="popup-website">Não preencha este campo</label>
+        <input type="text" id="popup-website" name="website" tabindex="-1" autocomplete="off">
+      </div>
+
+      <label class="consent" for="popup-consent">
+        <input type="checkbox" id="popup-consent" name="consent" required>
+        <span>Quero receber novidades da ${esc(site.name)} por e-mail ou pelo Instagram e concordo com o <a href="/privacidade" target="_blank" rel="noopener">aviso de privacidade</a>. Posso pedir a remoção dos meus dados quando quiser.</span>
+      </label>
+
+      <button type="submit" class="btn btn-dark btn-block" id="popup-submit">Quero participar</button>
+      <button type="button" class="lead-popup-later" data-popup-close>Agora não</button>
+    </div>
+  </form>
+</dialog>`;
 }
 
 module.exports = {

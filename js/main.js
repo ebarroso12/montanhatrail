@@ -137,75 +137,166 @@
     }
   });
 
-  /* ---------- lead capture form ---------- */
-  var leadForm = document.getElementById("lead-form");
-  if (leadForm) {
-    var leadSuccess = document.getElementById("lead-success");
-    var leadError = document.getElementById("lead-error");
-    var leadSubmit = document.getElementById("lead-submit");
+  /* ---------- cadastro de novidades (formulário do rodapé e pop-up) ---------- */
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  var INSTAGRAM_RE = /^[A-Za-z0-9._]{1,30}$/;
 
-    leadForm.addEventListener("submit", function (e) {
+  // Pop-up: abre sozinho ao entrar no site, some para sempre depois do
+  // cadastro e, se a pessoa fechar, só volta depois de alguns dias.
+  var POPUP_KEY = "alpins_cadastro";
+  var POPUP_DELAY_MS = 1500;
+  var POPUP_SNOOZE_DAYS = 7;
+
+  /** "" = nunca decidiu; "feito"; "adiado:<timestamp>"; null = navegador não deixa guardar. */
+  function readPopupState() {
+    try {
+      return window.localStorage.getItem(POPUP_KEY) || "";
+    } catch (err) {
+      return null;
+    }
+  }
+  function writePopupState(value) {
+    try {
+      window.localStorage.setItem(POPUP_KEY, value);
+    } catch (err) {
+      /* sem armazenamento: nada a lembrar */
+    }
+  }
+
+  function cleanInstagram(value) {
+    return value
+      .trim()
+      .replace(/^(https?:\/\/)?(www\.)?instagram\.com\//i, "")
+      .replace(/[/?#].*$/, "")
+      .replace(/^@+/, "");
+  }
+
+  function sendLead(payload) {
+    return fetch("/api/leads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }).then(function (r) {
+      return r
+        .json()
+        .catch(function () {
+          return {};
+        })
+        .then(function (data) {
+          return { status: r.status, data: data };
+        });
+    });
+  }
+
+  /** Liga um formulário de cadastro cujos campos têm o id "<prefix>-<campo>". */
+  function setupLeadForm(prefix, source, onSuccess) {
+    var form = document.getElementById(prefix + "-form");
+    if (!form) return;
+    var success = document.getElementById(prefix + "-success");
+    var error = document.getElementById(prefix + "-error");
+    var submit = document.getElementById(prefix + "-submit");
+    function field(name) {
+      return document.getElementById(prefix + "-" + name);
+    }
+    function fail(message, focusEl) {
+      error.textContent = message;
+      error.hidden = false;
+      if (focusEl) focusEl.focus();
+    }
+
+    form.addEventListener("submit", function (e) {
       e.preventDefault();
-      leadSuccess.hidden = true;
-      leadError.hidden = true;
+      success.hidden = true;
+      error.hidden = true;
 
-      var email = document.getElementById("lead-email").value.trim();
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        leadError.textContent = "Informe um e-mail válido.";
-        leadError.hidden = false;
-        document.getElementById("lead-email").focus();
-        return;
+      var name = field("name");
+      var email = field("email");
+      var instagram = field("instagram");
+      var consent = field("consent");
+      var insta = instagram ? cleanInstagram(instagram.value) : "";
+
+      if (source === "popup" && !name.value.trim()) return fail("Informe seu nome.", name);
+      if (!EMAIL_RE.test(email.value.trim())) return fail("Informe um e-mail válido.", email);
+      if (insta && !INSTAGRAM_RE.test(insta)) {
+        return fail("Instagram inválido: use só o nome do perfil (ex.: @alpins).", instagram);
       }
+      if (!consent.checked) return fail("Para receber novidades, marque que concorda com o aviso de privacidade.", consent);
 
-      var consent = document.getElementById("lead-consent");
-      if (consent && !consent.checked) {
-        leadError.textContent = "Para receber novidades, marque que concorda com o aviso de privacidade.";
-        leadError.hidden = false;
-        consent.focus();
-        return;
-      }
+      submit.disabled = true;
+      var label = submit.textContent;
+      submit.textContent = "Enviando…";
 
-      leadSubmit.disabled = true;
-      var originalLabel = leadSubmit.textContent;
-      leadSubmit.textContent = "Enviando…";
-
-      fetch("/api/leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: document.getElementById("lead-name").value.trim(),
-          email: email,
-          consent: !!(consent && consent.checked),
-          website: document.getElementById("lead-website").value
-        })
+      sendLead({
+        name: name.value.trim(),
+        email: email.value.trim(),
+        instagram: insta,
+        consent: true,
+        source: source,
+        website: field("website").value
       })
-        .then(function (r) {
-          return r
-            .json()
-            .catch(function () {
-              return {};
-            })
-            .then(function (data) {
-              return { status: r.status, data: data };
-            });
-        })
         .then(function (res) {
-          leadSubmit.disabled = false;
-          leadSubmit.textContent = originalLabel;
           if (res.status === 200 && res.data.ok) {
-            leadForm.reset();
-            leadSuccess.hidden = false;
+            form.reset();
+            success.hidden = false;
+            writePopupState("feito");
+            if (onSuccess) onSuccess();
           } else {
-            leadError.textContent = res.data.message || "Não foi possível enviar. Tente novamente.";
-            leadError.hidden = false;
+            fail(res.data.message || "Não foi possível enviar. Tente novamente.", res.data.field ? field(res.data.field) : null);
           }
         })
         .catch(function () {
-          leadSubmit.disabled = false;
-          leadSubmit.textContent = originalLabel;
-          leadError.textContent = "Erro de conexão. Tente novamente.";
-          leadError.hidden = false;
+          fail("Erro de conexão. Tente novamente.");
+        })
+        .then(function () {
+          submit.disabled = false;
+          submit.textContent = label;
         });
     });
+  }
+
+  setupLeadForm("lead", "site");
+
+  var popup = document.getElementById("popup");
+  if (popup && typeof popup.showModal === "function") {
+    var popupCloseTimer = null;
+    var closePopup = function () {
+      clearTimeout(popupCloseTimer);
+      if (popup.open) popup.close();
+    };
+
+    // Fechou sem se cadastrar (X, "Agora não", Esc ou clique fora): adia.
+    popup.addEventListener("close", function () {
+      if (readPopupState() !== "feito") {
+        writePopupState("adiado:" + (Date.now() + POPUP_SNOOZE_DAYS * 24 * 60 * 60 * 1000));
+      }
+    });
+    popup.querySelectorAll("[data-popup-close]").forEach(function (btn) {
+      btn.addEventListener("click", closePopup);
+    });
+    popup.addEventListener("click", function (e) {
+      if (e.target === popup) closePopup();
+    });
+
+    setupLeadForm("popup", "popup", function () {
+      document.getElementById("popup-fields").hidden = true;
+      popupCloseTimer = setTimeout(closePopup, 4000);
+    });
+
+    var shouldOpenPopup = function () {
+      var state = readPopupState();
+      if (state === null || state === "feito") return false;
+      var snoozed = /^adiado:(\d+)$/.exec(state);
+      return !(snoozed && Date.now() < Number(snoozed[1]));
+    };
+    var openPopup = function () {
+      if (popup.open || !shouldOpenPopup()) return;
+      // Não abre por cima da imagem ampliada ou de outro diálogo; tenta de novo depois.
+      if ((lightbox && !lightbox.hidden) || document.querySelector("dialog[open]")) {
+        setTimeout(openPopup, 4000);
+        return;
+      }
+      popup.showModal();
+    };
+    if (shouldOpenPopup()) setTimeout(openPopup, POPUP_DELAY_MS);
   }
 })();

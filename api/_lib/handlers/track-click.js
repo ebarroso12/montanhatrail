@@ -1,8 +1,14 @@
 const db = require('../db');
 const { parseBody } = require('../body');
 const { MARKETPLACES, id } = require('../validate');
+const rateLimit = require('../rate-limit');
 
 const PLACEMENTS = new Set(['card', 'produto']);
+
+// Cliques contados por visitante (hash do IP) a cada 10 minutos; acima disso
+// não entram na estatística, para ninguém inflar os números com um script.
+const CLICKS_PER_IP = 60;
+const CLICKS_WINDOW_SECONDS = 10 * 60;
 
 /**
  * Public endpoint: fire-and-forget click tracking for the marketplace buttons.
@@ -22,7 +28,11 @@ module.exports = async (req, res) => {
   const placement = PLACEMENTS.has(body.placement) ? body.placement : 'card';
   const page = String(body.page || '/').slice(0, 200);
 
-  if (productId && Object.prototype.hasOwnProperty.call(MARKETPLACES, marketplace)) {
+  if (
+    productId &&
+    Object.prototype.hasOwnProperty.call(MARKETPLACES, marketplace) &&
+    (await rateLimit.allow(req, 'clicks', CLICKS_PER_IP, CLICKS_WINDOW_SECONDS))
+  ) {
     const column = MARKETPLACES[marketplace].column;
     try {
       await db.query(

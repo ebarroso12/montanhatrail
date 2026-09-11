@@ -155,6 +155,23 @@ function id(value) {
   return Number.isSafeInteger(n) && n > 0 ? n : null;
 }
 
+/**
+ * Instagram (opcional): aceita "@perfil", "perfil" ou o link do perfil e
+ * devolve só o nome de usuário em minúsculas, ou null se vazio.
+ */
+function instagramHandle(value) {
+  let handle = typeof value === 'string' ? value.trim() : '';
+  if (!handle) return null;
+  handle = handle
+    .replace(/^(https?:\/\/)?(www\.)?instagram\.com\//i, '')
+    .replace(/[/?#].*$/, '')
+    .replace(/^@+/, '');
+  if (!/^[A-Za-z0-9._]{1,30}$/.test(handle)) {
+    throw new ValidationError('instagram', 'Instagram inválido: use só o nome do perfil (ex.: @alpins).');
+  }
+  return handle.toLowerCase();
+}
+
 module.exports = {
   ValidationError,
   MARKETPLACES,
@@ -169,4 +186,5 @@ module.exports = {
   imageUrl,
   imageList,
   id,
+  instagramHandle,
 };

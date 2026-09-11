@@ -58,6 +58,7 @@ const TABS = [
   ['produtos', 'Produtos'],
   ['categorias', 'Categorias'],
   ['leads', 'Leads'],
+  ['visitantes', 'Visitantes'],
   ['cliques', 'Cliques'],
   ['conteudo', 'Conteúdo'],
   ['seguranca', 'Segurança'],
@@ -151,8 +152,17 @@ function dashboard() {
     <section class="admin-panel" id="panel-leads" role="tabpanel" aria-labelledby="tab-leads">
       <div class="admin-card">
         <h2>Leads capturados</h2>
-        <p class="hint">Pessoas que deixaram o e-mail no formulário "Seja um alpinista" do site, com consentimento. Se alguém pedir a remoção dos dados, use "Excluir".</p>
+        <p class="hint">Cada cadastro recebido pelo pop-up de entrada ou pelo formulário "Seja um alpinista", sempre com consentimento. Para apagar todos os dados de uma pessoa, use "Excluir" na aba Visitantes.</p>
         <div id="leads-content"><p class="admin-loading">Carregando…</p></div>
+      </div>
+    </section>
+
+    <!-- VISITANTES -->
+    <section class="admin-panel" id="panel-visitantes" role="tabpanel" aria-labelledby="tab-visitantes">
+      <div class="admin-card">
+        <h2>Visitantes cadastrados</h2>
+        <p class="hint">Uma linha por pessoa (e-mail), com nome, Instagram e quantas vezes se cadastrou. Se alguém pedir a remoção dos dados, use "Excluir": apaga o visitante e todos os leads desse e-mail.</p>
+        <div id="visitors-content"><p class="admin-loading">Carregando…</p></div>
       </div>
     </section>
 

@@ -21,6 +21,7 @@ const PROTECTED_ROUTES = {
   categories: require('./_lib/handlers/admin/categories'),
   upload: require('./_lib/handlers/admin/upload'),
   leads: require('./_lib/handlers/admin/leads'),
+  visitors: require('./_lib/handlers/admin/visitors'),
   clicks: require('./_lib/handlers/admin/clicks'),
   content: require('./_lib/handlers/admin/content'),
   'change-password': require('./_lib/handlers/admin/change-password'),

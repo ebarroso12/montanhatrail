@@ -233,6 +233,7 @@
     produtos: loadProducts,
     categorias: loadCategories,
     leads: loadLeads,
+    visitantes: loadVisitors,
     cliques: loadClicks,
     conteudo: function () {
       if (!state.loaded.content) loadContent();
@@ -990,12 +991,13 @@
           box.appendChild(h('div', { class: 'admin-empty', text: 'Nenhum lead recebido ainda.' }));
           return;
         }
-        box.appendChild(table(['Data', 'Nome', 'E-mail', 'Origem', ''], leads.map(function (lead) {
+        box.appendChild(table(['Data', 'Nome', 'E-mail', 'Instagram', 'Origem', ''], leads.map(function (lead) {
           return [
             formatDate(lead.created_at),
             lead.name || '—',
             lead.email,
-            lead.source || '—',
+            instagramCell(lead.instagram),
+            sourceLabel(lead.source),
             h('button', { type: 'button', class: 'admin-btn admin-btn-danger-outline admin-btn-sm', text: 'Excluir', onclick: function () { deleteLead(lead); } }),
           ];
         })));
@@ -1003,14 +1005,77 @@
       .catch(function (err) { box.textContent = err.message; });
   }
 
+  var SOURCE_LABELS = { site: 'Formulário do site', popup: 'Pop-up' };
+
+  function sourceLabel(value) {
+    return SOURCE_LABELS[value] || value || '—';
+  }
+
+  /** Link para o perfil; o nome de usuário já vem validado ([a-z0-9._]) do servidor. */
+  function instagramCell(handle) {
+    if (!handle) return '—';
+    return h('a', {
+      href: 'https://www.instagram.com/' + encodeURIComponent(handle) + '/',
+      target: '_blank',
+      rel: 'noopener noreferrer',
+      text: '@' + handle,
+    });
+  }
+
   /** LGPD: remove a lead when the person asks for their data to be deleted. */
   function deleteLead(lead) {
     confirmDelete({
       title: 'Excluir cadastro',
-      message: 'Excluir o cadastro de ' + lead.email + '? Use quando a pessoa pedir a remoção dos dados. Esta ação não pode ser desfeita.',
+      message: 'Excluir este cadastro de ' + lead.email + '? Para apagar todos os dados da pessoa, use "Excluir" na aba Visitantes. Esta ação não pode ser desfeita.',
       onConfirm: function () {
         return api('leads?id=' + encodeURIComponent(lead.id), { method: 'DELETE' }).then(function () {
           toast('Cadastro excluído.');
+          loadLeads();
+          loadStats();
+        });
+      },
+    });
+  }
+
+  function loadVisitors() {
+    var box = $('visitors-content');
+    api('visitors')
+      .then(function (data) {
+        clear(box);
+        var visitors = data.visitors || [];
+        if (!visitors.length) {
+          box.appendChild(h('div', { class: 'admin-empty', text: 'Nenhum visitante cadastrado ainda.' }));
+          return;
+        }
+        box.appendChild(h('p', {
+          class: 'hint',
+          text: plural(data.total, 'visitante cadastrado', 'visitantes cadastrados') +
+            (data.total > visitors.length ? ' · mostrando os ' + visitors.length + ' mais recentes' : ''),
+        }));
+        box.appendChild(table(['Último cadastro', 'Nome', 'E-mail', 'Instagram', 'Cadastros', 'Origem', ''], visitors.map(function (visitor) {
+          return [
+            formatDate(visitor.updatedAt),
+            visitor.name || '—',
+            visitor.email,
+            instagramCell(visitor.instagram),
+            String(visitor.signups),
+            sourceLabel(visitor.lastSource),
+            h('button', { type: 'button', class: 'admin-btn admin-btn-danger-outline admin-btn-sm', text: 'Excluir', onclick: function () { deleteVisitor(visitor); } }),
+          ];
+        })));
+      })
+      .catch(function (err) { box.textContent = err.message; });
+  }
+
+  /** LGPD: apaga o visitante e todos os leads do mesmo e-mail. */
+  function deleteVisitor(visitor) {
+    confirmDelete({
+      title: 'Excluir visitante',
+      message: 'Excluir ' + visitor.email + ' e todos os cadastros desse e-mail? Use quando a pessoa pedir a remoção dos dados. Esta ação não pode ser desfeita.',
+      onConfirm: function () {
+        return api('visitors?id=' + encodeURIComponent(visitor.id), { method: 'DELETE' }).then(function () {
+          toast('Visitante e cadastros excluídos.');
+          loadVisitors();
           loadLeads();
           loadStats();
         });

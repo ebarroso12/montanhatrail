@@ -14,18 +14,19 @@ Sem build step e com só duas dependências (`pg`, `bcryptjs`):
 - **Autenticação**: própria (bcrypt + sessão em cookie `HttpOnly`), a mesma do projeto anterior.
 
 ```
-api/site.js            → páginas: /, /catalogo, /categoria/:slug, /produto/:slug, /sitemap.xml, /robots.txt, /admin, /admin/login
+api/site.js            → páginas: /, /catalogo, /categoria/:slug, /produto/:slug, /privacidade, /sitemap.xml, /robots.txt, /admin, /admin/login
 api/public.js          → /api/leads e /api/track-click
-api/admin.js           → /api/admin/* (login, produtos, categorias, upload, leads, cliques, conteúdo, senha)
+api/admin.js           → /api/admin/* (login, produtos, categorias, upload, leads, visitantes, cliques, conteúdo, senha)
 api/_lib/              → código compartilhado (não vira função)
   site.js              → identidade da marca: nome, telefone, link do WhatsApp, logo, parceiro
   catalog.js           → consultas públicas do catálogo
   validate.js          → validação de entrada (inclui domínios aceitos de Shopee e Mercado Livre)
+  rate-limit.js        → limite de envios por visitante (cadastro e cliques)
   storage.js           → upload/remoção de imagens no Supabase Storage
   views/               → HTML das páginas públicas e do painel
   handlers/            → lógica de cada endpoint
 css/style.css          → site público      css/admin.css → painel
-js/main.js             → menu, galeria, rastreio de cliques, formulário
+js/main.js             → menu, galeria, rastreio de cliques, formulário e pop-up de cadastro
 js/admin.js            → painel           js/admin-login.js → tela de login
 migrations/            → SQL do banco (rodar no SQL Editor do Supabase)
 vercel.json            → rotas, redirects e headers de segurança
@@ -45,6 +46,20 @@ As rotas ficam agrupadas em 3 funções para respeitar o limite de funções por
 - Uma categoria usada por algum produto **não pode ser excluída** (proteção no banco e na API).
 - Para adicionar outro marketplace no futuro: nova coluna em `products` + entrada em `MARKETPLACES` (`api/_lib/validate.js`) + rótulo do botão (`api/_lib/views/components.js`).
 
+**leads**: um registro por cadastro recebido: `name`, `email`, `instagram`, `source` (`popup` = pop-up de entrada, `site` = formulário "Seja um alpinista"), `consent_at`, `consent_version`, `created_at`. O mesmo e-mail pela mesma origem em 24 h não duplica.
+
+**visitors** (visitantes): um registro por pessoa (e-mail): `name`, `instagram`, `first_source`, `last_source`, `signups` (quantos cadastros), `consent_at`, `consent_version`. Nome e Instagram já gravados não são trocados por um envio posterior (ninguém altera os dados de outra pessoa só digitando o e-mail dela); campos vazios são completados.
+
+**rate_limits**: contador de envios por hash do IP e janela de tempo (o IP não é guardado; janelas com mais de 1 dia são apagadas).
+
+## Pop-up de cadastro
+
+- Abre 1,5 s depois que a pessoa entra em qualquer página pública (exceto aviso de privacidade, páginas de erro e pré-visualização do painel).
+- Pede **nome**, **e-mail**, **Instagram (opcional)** e o consentimento (caixa não marcada + link para `/privacidade`).
+- Cada envio grava um **lead** e cria/atualiza o **visitante** daquele e-mail.
+- Cadastrou (no pop-up ou no formulário do rodapé): não aparece mais naquele navegador. Fechou sem cadastrar: volta depois de 7 dias.
+- Ajustes em `js/main.js`: `POPUP_DELAY_MS` e `POPUP_SNOOZE_DAYS`. Se o texto do consentimento mudar, troque `CONSENT_VERSION` em `api/_lib/handlers/leads.js`.
+
 ## Painel administrativo (`/admin`)
 
 O HTML do painel só é entregue para uma sessão válida; sem login, `/admin` redireciona para `/admin/login`.
@@ -54,7 +69,8 @@ Abas:
 - **Painel**: números do catálogo.
 - **Produtos**: busca, filtros, criar, editar, ativar/desativar, destacar, excluir com confirmação e visualizar antes de publicar. Produtos novos começam inativos.
 - **Categorias**: criar, editar, ordenar, ativar/desativar, excluir com confirmação digitada.
-- **Leads**: e-mails do formulário "Seja um alpinista".
+- **Leads**: cada cadastro recebido (pop-up e formulário), com Instagram e origem.
+- **Visitantes**: uma linha por pessoa. "Excluir" apaga o visitante e todos os leads do e-mail (pedido de remoção dos dados).
 - **Cliques**: cliques por produto e marketplace.
 - **Conteúdo**: textos do topo da home e faixa de promoção.
 - **Segurança**: troca de senha.
@@ -65,7 +81,8 @@ Abas:
 - Senha com hash bcrypt (8 a 72 caracteres), sessão com cookie `HttpOnly` + `Secure` + `SameSite=Lax`.
 - Login: bloqueio após 5 tentativas erradas em 15 min por e-mail + IP (e 30 por e-mail no total), tentativas simultâneas serializadas no banco, mesmo tempo de resposta para e-mail existente ou não. Trocar a senha encerra as sessões de outros aparelhos.
 - Conexão com o Postgres por TLS **com certificado validado** (CA raiz do Supabase em `api/_lib/supabase-ca.js`).
-- LGPD: o formulário de novidades exige consentimento explícito (a versão do aviso fica registrada no lead), há a página `/privacidade`, cadastros repetidos não duplicam e o painel permite excluir um lead a pedido da pessoa.
+- LGPD: pop-up e formulário exigem consentimento explícito (data e versão do aviso ficam registradas), há a página `/privacidade`, e o painel permite excluir um cadastro ou todos os dados de uma pessoa.
+- Cadastro e cliques: limite por visitante (5 cadastros e 60 cliques contados a cada 10 min por IP, guardando só um hash), além do campo honeypot contra bots.
 - Operações de escrita do painel exigem sessão válida, corpo JSON e origem igual à do site (proteção contra CSRF).
 - Validação no servidor de todos os campos. Os links de compra só aceitam `https` e os domínios oficiais: `shopee.com.br`, `shope.ee`, `shp.ee`, `mercadolivre.com.br`, `mercadolivre.com`, `meli.la`.
 - Upload: o tipo real do arquivo é conferido pelos bytes (JPG, PNG ou WebP, até 3 MB). A service key do Supabase só existe no servidor.
@@ -87,9 +104,10 @@ Sem as variáveis do Supabase Storage, o painel continua funcionando com URLs de
 
 ## Publicação (ordem recomendada)
 
-1. No Supabase (SQL Editor), rodar `migrations/001_catalog.sql`, depois `migrations/002_seed_alpins.sql` e por último `migrations/003_product_categories.sql`.
+1. No Supabase (SQL Editor), rodar as migrations em ordem: `001_catalog.sql`, `002_seed_alpins.sql`, `003_product_categories.sql` e `004_popup_visitors.sql`.
    - A 001 cria as tabelas, as permissões da role `app_service` e o bucket `products`.
    - A 002 migra os tênis Adventure Trail e Alpha Run para o catálogo, limpa os textos antigos do topo e troca o link antigo do Mercado Livre.
+   - A 004 adiciona Instagram e consentimento em `leads` e cria `visitors` e `rate_limits`. **Rode antes do deploy do pop-up**: sem ela o cadastro responde erro.
 2. Na Vercel, adicionar `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`.
 3. Fazer o deploy da branch.
 
