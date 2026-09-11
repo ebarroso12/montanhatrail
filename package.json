@@ -1,8 +1,11 @@
 {
-  "name": "montanha-trail",
-  "version": "1.0.0",
+  "name": "alpins",
+  "version": "2.0.0",
   "private": true,
-  "description": "Adventure Trail — landing page estática + painel administrativo (Vercel Functions + Postgres/Supabase).",
+  "description": "Alpins — catálogo de produtos com links para Shopee e Mercado Livre + painel administrativo (Vercel Functions + Postgres/Supabase).",
+  "scripts": {
+    "check": "node scripts/check.js"
+  },
   "dependencies": {
     "pg": "^8.13.1",
     "bcryptjs": "^2.4.3"

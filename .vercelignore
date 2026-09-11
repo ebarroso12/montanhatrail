@@ -1,0 +1,6 @@
+# Arquivos que não precisam ser publicados no deploy (nem como estáticos).
+migrations/
+scripts/
+README.md
+.env.example
+.claudeignore
