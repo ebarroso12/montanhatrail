@@ -2,6 +2,12 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "redirects": [
     {
+      "source": "/",
+      "has": [{ "type": "host", "value": "montanhatrail.vercel.app" }],
+      "destination": "https://alpins.vercel.app/",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [{ "type": "host", "value": "montanhatrail.vercel.app" }],
       "destination": "https://alpins.vercel.app/:path*",
