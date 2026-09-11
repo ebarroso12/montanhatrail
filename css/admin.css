@@ -65,6 +65,19 @@ body.admin-body{min-height:100vh;display:flex;flex-direction:column;background:v
 .admin-field.checkbox label{margin:0;text-transform:none;letter-spacing:0;font-size:.92rem;color:var(--ink);font-weight:500}
 .admin-field.has-error input,.admin-field.has-error textarea,.admin-field.has-error select{border-color:var(--brown);background:#fff6f3}
 .field-hint{font-size:.78rem;color:var(--ink-soft);margin:6px 0 0;line-height:1.45}
+
+/* campo de senha com botão de olho (js/password-toggle.js) */
+.password-field{position:relative}
+.admin-field .password-field input{padding-right:52px}
+.password-field input::-ms-reveal{display:none}
+.password-toggle{
+  position:absolute;top:50%;right:4px;transform:translateY(-50%);
+  display:inline-flex;align-items:center;justify-content:center;
+  width:44px;height:40px;border-radius:var(--radius);color:var(--ink-soft);
+}
+.password-toggle:hover{color:var(--ink)}
+.password-toggle:focus-visible{outline:2px solid var(--orange);outline-offset:0}
+.password-toggle svg{width:20px;height:20px}
 .admin-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
 .admin-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:0 16px;align-items:end}
 .admin-fieldset{border:1px solid var(--line);border-radius:4px;padding:14px 16px 6px;margin:4px 0 18px;background:rgba(255,255,255,.4)}

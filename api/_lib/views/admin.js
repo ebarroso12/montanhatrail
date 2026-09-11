@@ -16,6 +16,7 @@ ${FONTS}
 </head>
 <body class="admin-body ${bodyClass}">
 ${body}
+<script src="/js/password-toggle.js" defer></script>
 <script src="${script}" defer></script>
 </body>
 </html>`;
