@@ -128,6 +128,30 @@ function footer(ctx) {
 </footer>`;
 }
 
+/**
+ * Trilha sonora: botão flutuante + painel com o player do Spotify. O iframe
+ * não vai no HTML; o js/main.js cria no primeiro clique (nada do Spotify é
+ * carregado antes disso). Minimizar só esconde o painel e a música continua.
+ */
+function musicPlayer() {
+  const music = site.music;
+  if (!music || !/^[A-Za-z0-9]{22}$/.test(music.spotifyPlaylistId || '')) return '';
+  const embed = `https://open.spotify.com/embed/playlist/${music.spotifyPlaylistId}?utm_source=generator&theme=0`;
+  return `<div class="music" id="music" data-embed="${esc(embed)}" data-title="${esc(music.title)}">
+  <div class="music-panel" id="music-panel" role="region" aria-label="${esc(music.label)}" hidden>
+    <div class="music-head">
+      <p class="music-title"><span aria-hidden="true">♪</span> ${esc(music.label)}</p>
+      <button type="button" class="music-close" id="music-close" aria-label="Minimizar o player (a música continua)">Minimizar</button>
+    </div>
+    <div class="music-frame" id="music-frame"></div>
+    <p class="music-note">Player do Spotify. Sem login no Spotify, toca trechos de 30 segundos.</p>
+  </div>
+  <button type="button" class="music-toggle" id="music-toggle" aria-controls="music-panel" aria-expanded="false">
+    <span class="music-icon" aria-hidden="true">♪</span><span class="music-toggle-text">${esc(music.label)}</span>
+  </button>
+</div>`;
+}
+
 function promoBanner(ctx) {
   const content = ctx && ctx.content;
   if (!content || content.promo_banner_enabled !== 'true' || !content.promo_banner_text) return '';
@@ -176,6 +200,7 @@ ${header()}
 ${opts.content}
 </main>
 ${footer(ctx)}
+${musicPlayer()}
 ${opts.leadPopup === false ? '' : leadPopup()}
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Imagem ampliada" hidden>
   <button class="lightbox-close" id="lightbox-close" type="button" aria-label="Fechar">✕</button>

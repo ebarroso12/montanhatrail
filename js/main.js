@@ -115,6 +115,35 @@
     }
   });
 
+  /* ---------- trilha sonora (player do Spotify) ---------- */
+  // O iframe só é criado no primeiro clique: antes disso nada do Spotify é
+  // carregado. Minimizar só esconde o painel, então a música continua tocando.
+  var music = document.getElementById("music");
+  if (music) {
+    var musicToggle = document.getElementById("music-toggle");
+    var musicPanel = document.getElementById("music-panel");
+    var musicFrame = document.getElementById("music-frame");
+    var setMusic = function (open) {
+      if (open && !musicFrame.firstChild) {
+        var iframe = document.createElement("iframe");
+        iframe.src = music.getAttribute("data-embed");
+        iframe.title = "Player do Spotify: " + music.getAttribute("data-title");
+        iframe.allow = "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture";
+        musicFrame.appendChild(iframe);
+      }
+      musicPanel.hidden = !open;
+      music.classList.toggle("is-open", open);
+      musicToggle.setAttribute("aria-expanded", String(open));
+    };
+    musicToggle.addEventListener("click", function () {
+      setMusic(true);
+    });
+    document.getElementById("music-close").addEventListener("click", function () {
+      setMusic(false);
+      musicToggle.focus();
+    });
+  }
+
   /* ---------- click tracking (marketplace buttons) ---------- */
   // Fire-and-forget: never blocks or delays the actual link click.
   document.addEventListener("click", function (e) {

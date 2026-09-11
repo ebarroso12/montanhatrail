@@ -48,6 +48,16 @@ module.exports = {
   // verificação (método "Tag HTML") e publique. Vazio = não adiciona a tag.
   googleSiteVerification: '',
 
+  // Trilha sonora: botão flutuante que abre o player do Spotify. O player só é
+  // carregado depois do clique (navegadores não deixam tocar som sozinho).
+  // Para trocar a playlist, cole o código do link open.spotify.com/playlist/<código>.
+  // Código vazio = sem player.
+  music: {
+    label: 'Trilha sonora',
+    title: 'Eu vou subir a montanha',
+    spotifyPlaylistId: '53MTONN4ur0q4BRh01c5me',
+  },
+
   // Imagem padrão ao compartilhar o site (WhatsApp, redes sociais).
   ogImage: '/images/marca/alpins-logo.jpg',
 

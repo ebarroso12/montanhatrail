@@ -14,6 +14,8 @@ const CSP = [
   "font-src 'self' https://fonts.gstatic.com",
   "script-src 'self'",
   "connect-src 'self'",
+  // Único iframe externo permitido: o player do Spotify (trilha sonora).
+  'frame-src https://open.spotify.com',
   "frame-ancestors 'self'",
   "base-uri 'self'",
   "form-action 'self'",

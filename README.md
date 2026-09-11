@@ -114,6 +114,10 @@ Sem as variáveis do Supabase Storage, o painel continua funcionando com URLs de
 
 Rodar as migrations antes do deploy evita que o site novo suba sem as tabelas.
 
+## Trilha sonora
+
+Botão flutuante "Trilha sonora" nas páginas públicas, que abre o player do Spotify. O player só carrega depois do clique (os navegadores não deixam tocar som sozinho). Para trocar a playlist, mude `music.spotifyPlaylistId` em `api/_lib/site.js` (o código que vem depois de `open.spotify.com/playlist/`); deixar vazio remove o botão.
+
 ## Endereço e Google
 
 - O endereço oficial é `alpins.vercel.app`. Quem abrir `montanhatrail.vercel.app` é redirecionado (308, mesmo caminho) pelo `vercel.json`. Para um domínio próprio, troque o destino desse redirect e a variável `SITE_URL`.
