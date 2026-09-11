@@ -116,7 +116,17 @@ Rodar as migrations antes do deploy evita que o site novo suba sem as tabelas.
 
 ## Trilha sonora
 
-Botão flutuante "Trilha sonora" nas páginas públicas, que abre o player do Spotify. O player só carrega depois do clique (os navegadores não deixam tocar som sozinho). Para trocar a playlist, mude `music.spotifyPlaylistId` em `api/_lib/site.js` (o código que vem depois de `open.spotify.com/playlist/`); deixar vazio remove o botão.
+Botão flutuante "Trilha sonora" nas páginas públicas, que abre o player do Spotify (playlist "Legendários o Propósito HAU!"). O player só carrega depois do clique (os navegadores não deixam tocar som sozinho).
+
+- Música contínua: com o player carregado, links internos, filtros, busca e o botão voltar trocam só o conteúdo da página (`fetch` + histórico), então a música não para. Sem player, a navegação é a normal; qualquer falha cai na navegação normal.
+- Para trocar a playlist, cole o link de compartilhar do Spotify (ou só o código) em `music.spotifyPlaylist` em `api/_lib/site.js`. Link inválido ou vazio remove o botão, e o aviso de privacidade deixa de citar o player (mesma regra: `site.musicPlaylistId()`).
+- A API de iframe do Spotify (play com um clique) não é usada de propósito: o código dela usa `eval`, o que exigiria liberar `unsafe-eval` no CSP do site inteiro.
+
+Ao lado fica o botão "Atendente virtual" (WhatsApp da Alpins). No celular os dois viram só ícones, com o nome mantido para leitores de tela.
+
+## App no celular
+
+O site pode ser instalado na tela inicial (`manifest.webmanifest`, ícones em `images/marca/app-*`). No Android/Chrome aparece o botão "Instalar o app" no rodapé quando o navegador oferece; no iPhone, a instrução é Safari → Compartilhar → Adicionar à Tela de Início.
 
 ## Endereço e Google
 

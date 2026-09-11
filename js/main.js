@@ -45,28 +45,32 @@
     },
     true
   );
-  // Images that already failed before this deferred script ran.
-  Array.prototype.forEach.call(document.images, function (img) {
-    if (img.getAttribute("src") && img.complete && img.naturalWidth === 0) markBroken(img);
-  });
+  // Images that already failed before this script ran (or before the page content was swapped).
+  function sweepBrokenImages(root) {
+    Array.prototype.forEach.call(root.querySelectorAll("img"), function (img) {
+      if (img.getAttribute("src") && img.complete && img.naturalWidth === 0) markBroken(img);
+    });
+  }
 
   /* ---------- product gallery ---------- */
-  var mainImg = document.getElementById("gallery-main");
-  var thumbs = document.querySelectorAll("[data-gallery-src]");
-  thumbs.forEach(function (thumb) {
-    thumb.addEventListener("click", function () {
-      if (!mainImg) return;
-      mainImg.hidden = false;
-      if (mainImg.parentElement) mainImg.parentElement.classList.remove("is-broken");
-      mainImg.src = thumb.getAttribute("data-gallery-src");
-      thumbs.forEach(function (t) {
-        t.classList.remove("is-active");
-        t.setAttribute("aria-pressed", "false");
+  function initGallery(root) {
+    var mainImg = root.querySelector("#gallery-main");
+    var thumbs = root.querySelectorAll("[data-gallery-src]");
+    thumbs.forEach(function (thumb) {
+      thumb.addEventListener("click", function () {
+        if (!mainImg) return;
+        mainImg.hidden = false;
+        if (mainImg.parentElement) mainImg.parentElement.classList.remove("is-broken");
+        mainImg.src = thumb.getAttribute("data-gallery-src");
+        thumbs.forEach(function (t) {
+          t.classList.remove("is-active");
+          t.setAttribute("aria-pressed", "false");
+        });
+        thumb.classList.add("is-active");
+        thumb.setAttribute("aria-pressed", "true");
       });
-      thumb.classList.add("is-active");
-      thumb.setAttribute("aria-pressed", "true");
     });
-  });
+  }
 
   /* ---------- lightbox ---------- */
   var lightbox = document.getElementById("lightbox");
@@ -74,25 +78,27 @@
   var lightboxClose = document.getElementById("lightbox-close");
   var lastFocus = null;
 
-  document.querySelectorAll("[data-lightbox]").forEach(function (trigger) {
-    trigger.addEventListener("click", function () {
-      var img = trigger.querySelector("img");
-      if (!img || img.hidden || !lightbox) return;
-      lastFocus = trigger;
-      lightboxImg.src = img.currentSrc || img.src;
-      lightboxImg.alt = img.alt;
-      lightbox.hidden = false;
-      document.body.style.overflow = "hidden";
-      lightboxClose.focus();
+  function initLightboxTriggers(root) {
+    root.querySelectorAll("[data-lightbox]").forEach(function (trigger) {
+      trigger.addEventListener("click", function () {
+        var img = trigger.querySelector("img");
+        if (!img || img.hidden || !lightbox) return;
+        lastFocus = trigger;
+        lightboxImg.src = img.currentSrc || img.src;
+        lightboxImg.alt = img.alt;
+        lightbox.hidden = false;
+        document.body.style.overflow = "hidden";
+        lightboxClose.focus();
+      });
     });
-  });
+  }
 
   function closeLightbox() {
     if (!lightbox || lightbox.hidden) return;
     lightbox.hidden = true;
     lightboxImg.removeAttribute("src");
     document.body.style.overflow = "";
-    if (lastFocus) lastFocus.focus();
+    if (lastFocus && document.body.contains(lastFocus)) lastFocus.focus();
   }
   if (lightboxClose) lightboxClose.addEventListener("click", closeLightbox);
   if (lightbox) {
@@ -117,12 +123,15 @@
 
   /* ---------- trilha sonora (player do Spotify) ---------- */
   // O iframe só é criado no primeiro clique: antes disso nada do Spotify é
-  // carregado. Minimizar só esconde o painel, então a música continua tocando.
+  // carregado. Minimizar só esconde o painel, e a música continua tocando,
+  // inclusive ao navegar pelo site (ver "navegação sem recarregar" abaixo).
+  var radioOn = false;
   var music = document.getElementById("music");
   if (music) {
     var musicToggle = document.getElementById("music-toggle");
     var musicPanel = document.getElementById("music-panel");
     var musicFrame = document.getElementById("music-frame");
+    var musicClose = document.getElementById("music-close");
     var setMusic = function (open) {
       if (open && !musicFrame.firstChild) {
         var iframe = document.createElement("iframe");
@@ -130,17 +139,23 @@
         iframe.title = "Player do Spotify: " + music.getAttribute("data-title");
         iframe.allow = "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture";
         musicFrame.appendChild(iframe);
+        radioOn = true;
       }
       musicPanel.hidden = !open;
       music.classList.toggle("is-open", open);
       musicToggle.setAttribute("aria-expanded", String(open));
+      // O botão que abriu o player some; o foco vai para o painel e volta ao minimizar.
+      if (open) musicClose.focus();
+      else musicToggle.focus();
     };
     musicToggle.addEventListener("click", function () {
       setMusic(true);
     });
-    document.getElementById("music-close").addEventListener("click", function () {
+    musicClose.addEventListener("click", function () {
       setMusic(false);
-      musicToggle.focus();
+    });
+    musicPanel.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") setMusic(false);
     });
   }
 
@@ -283,8 +298,6 @@
     });
   }
 
-  setupLeadForm("lead", "site");
-
   var popup = document.getElementById("popup");
   if (popup && typeof popup.showModal === "function") {
     var popupCloseTimer = null;
@@ -327,5 +340,161 @@
       popup.showModal();
     };
     if (shouldOpenPopup()) setTimeout(openPopup, POPUP_DELAY_MS);
+  }
+
+  /* ---------- tudo que vive dentro do conteúdo da página ---------- */
+  function initPage(root) {
+    initGallery(root);
+    initLightboxTriggers(root);
+    setupLeadForm("lead", "site");
+    sweepBrokenImages(root);
+  }
+  initPage(document);
+
+  /* ---------- navegação sem recarregar (enquanto a trilha sonora está ligada) ---------- */
+  // Com o player do Spotify carregado, os links internos trocam só o conteúdo
+  // da página (fetch + histórico do navegador), então a música não para. Sem
+  // player, a navegação é a normal. Qualquer falha cai na navegação normal.
+  var SOFT_PATHS = /^\/(?:$|catalogo$|privacidade$|categoria\/[^/]+$|produto\/[^/]+$)/;
+  var softToken = 0;
+  var currentKey = window.location.pathname + window.location.search;
+
+  function softUrl(href) {
+    var url;
+    try {
+      url = new URL(href, window.location.href);
+    } catch (err) {
+      return null;
+    }
+    if (url.origin !== window.location.origin || !SOFT_PATHS.test(url.pathname)) return null;
+    if (url.searchParams.has("preview")) return null;
+    return url;
+  }
+
+  function syncHead(doc) {
+    document.title = doc.title;
+    ['meta[name="description"]', 'meta[name="robots"]', 'link[rel="canonical"]'].forEach(function (selector) {
+      var current = document.head.querySelector(selector);
+      var next = doc.head.querySelector(selector);
+      if (next) next = document.importNode(next, true);
+      if (current && next) current.parentNode.replaceChild(next, current);
+      else if (current) current.parentNode.removeChild(current);
+      else if (next) document.head.appendChild(next);
+    });
+  }
+
+  function softNavigate(url, push) {
+    var token = ++softToken;
+    document.documentElement.classList.add("is-loading");
+    fetch(url.href, { credentials: "same-origin", headers: { Accept: "text/html" } })
+      .then(function (r) {
+        if ((r.headers.get("content-type") || "").indexOf("text/html") === -1) throw new Error("resposta não é HTML");
+        return r.text();
+      })
+      .then(function (html) {
+        if (token !== softToken) return;
+        var doc = new DOMParser().parseFromString(html, "text/html");
+        var next = doc.getElementById("conteudo");
+        var main = document.getElementById("conteudo");
+        if (!next || !main) throw new Error("página sem conteúdo");
+        if (push) {
+          window.history.replaceState({ soft: true, y: window.scrollY }, "");
+          window.history.pushState({ soft: true, y: 0 }, "", url.href);
+        }
+        currentKey = url.pathname + url.search;
+        closeLightbox();
+        setNav(false);
+        syncHead(doc);
+        document.body.className = doc.body.className;
+        main.innerHTML = next.innerHTML;
+        initPage(main);
+        var target = url.hash ? document.getElementById(decodeURIComponent(url.hash.slice(1))) : null;
+        if (target) target.scrollIntoView();
+        else window.scrollTo(0, push ? 0 : (window.history.state && window.history.state.y) || 0);
+        main.setAttribute("tabindex", "-1");
+        main.focus({ preventScroll: true });
+      })
+      .catch(function () {
+        // No "voltar" o endereço já mudou: basta recarregar.
+        if (push) window.location.assign(url.href);
+        else window.location.reload();
+      })
+      .then(function () {
+        if (token === softToken) document.documentElement.classList.remove("is-loading");
+      });
+  }
+
+  document.addEventListener("click", function (e) {
+    if (!radioOn || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var link = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+    if (!link || (link.target && link.target !== "_self") || link.hasAttribute("download")) return;
+    var url = softUrl(link.href);
+    if (!url) return;
+    // Âncora na própria página (ex.: #catalogo): o navegador só rola.
+    if (url.pathname + url.search === currentKey && url.hash) return;
+    e.preventDefault();
+    window.history.scrollRestoration = "manual";
+    softNavigate(url, true);
+  });
+
+  // Busca do catálogo (formulário GET).
+  document.addEventListener("submit", function (e) {
+    if (!radioOn || e.defaultPrevented) return;
+    var form = e.target;
+    if (!form || String(form.getAttribute("method") || "").toLowerCase() !== "get") return;
+    var url = softUrl(form.action);
+    if (!url) return;
+    url.search = new URLSearchParams(new FormData(form)).toString();
+    e.preventDefault();
+    window.history.scrollRestoration = "manual";
+    softNavigate(url, true);
+  });
+
+  window.addEventListener("popstate", function () {
+    if (!radioOn) return;
+    var key = window.location.pathname + window.location.search;
+    if (key === currentKey) return; // só mudou a âncora
+    var url = softUrl(window.location.href);
+    if (url) softNavigate(url, false);
+    else window.location.reload();
+  });
+
+  /* ---------- app no celular (instalar na tela inicial) ---------- */
+  var appBox = document.getElementById("app-install");
+  if (appBox) {
+    var appButton = document.getElementById("app-install-button");
+    var appIos = document.getElementById("app-install-ios");
+    var appOther = document.getElementById("app-install-other");
+    var standalone =
+      (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true;
+    if (standalone) {
+      appBox.hidden = true;
+    } else {
+      var isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+      appIos.hidden = !isIos;
+      appOther.hidden = isIos;
+      var installPrompt = null;
+      // Android/Chrome: o próprio navegador avisa quando dá para instalar.
+      window.addEventListener("beforeinstallprompt", function (e) {
+        e.preventDefault();
+        installPrompt = e;
+        appButton.hidden = false;
+        appOther.hidden = true;
+      });
+      appButton.addEventListener("click", function () {
+        if (!installPrompt) return;
+        installPrompt.prompt();
+        installPrompt.userChoice
+          .catch(function () {})
+          .then(function () {
+            installPrompt = null;
+            appButton.hidden = true;
+            appOther.hidden = isIos;
+          });
+      });
+      window.addEventListener("appinstalled", function () {
+        appBox.hidden = true;
+      });
+    }
   }
 })();

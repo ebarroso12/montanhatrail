@@ -1,0 +1,22 @@
+{
+  "id": "/",
+  "name": "Alpins",
+  "short_name": "Alpins",
+  "description": "Catálogo Alpins: produtos selecionados com links diretos para a Shopee e o Mercado Livre.",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#14170f",
+  "theme_color": "#14170f",
+  "categories": ["shopping"],
+  "icons": [
+    { "src": "/images/marca/app-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/images/marca/app-512.webp", "sizes": "512x512", "type": "image/webp", "purpose": "any" },
+    { "src": "/images/marca/app-maskable-512.webp", "sizes": "512x512", "type": "image/webp", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Catálogo", "short_name": "Catálogo", "url": "/catalogo" }
+  ]
+}

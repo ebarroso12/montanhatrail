@@ -96,6 +96,13 @@ function footer(ctx) {
             .join('')}</nav>`
         : ''
     }
+    <div class="app-install" id="app-install">
+      <p class="eyebrow">${esc(site.name)} no celular</p>
+      <p class="body-text small">Instale o site como app: ele abre direto da tela inicial, em tela cheia.</p>
+      <button type="button" class="btn btn-dark btn-sm" id="app-install-button" hidden>Instalar o app</button>
+      <p class="app-install-help" id="app-install-ios" hidden>No iPhone (Safari): toque em <strong>Compartilhar</strong> e depois em <strong>Adicionar à Tela de Início</strong>.</p>
+      <p class="app-install-help" id="app-install-other">No Android (Chrome): abra o menu <strong>⋮</strong> e toque em <strong>Instalar app</strong> ou <strong>Adicionar à tela inicial</strong>. No iPhone (Safari): <strong>Compartilhar</strong> → <strong>Adicionar à Tela de Início</strong>.</p>
+    </div>
   </div>
 
   <div class="wrap footer-mid">
@@ -135,8 +142,9 @@ function footer(ctx) {
  */
 function musicPlayer() {
   const music = site.music;
-  if (!music || !/^[A-Za-z0-9]{22}$/.test(music.spotifyPlaylistId || '')) return '';
-  const embed = `https://open.spotify.com/embed/playlist/${music.spotifyPlaylistId}?utm_source=generator&theme=0`;
+  const playlistId = site.musicPlaylistId();
+  if (!playlistId) return '';
+  const embed = `https://open.spotify.com/embed/playlist/${playlistId}?utm_source=generator&theme=0`;
   return `<div class="music" id="music" data-embed="${esc(embed)}" data-title="${esc(music.title)}">
   <div class="music-panel" id="music-panel" role="region" aria-label="${esc(music.label)}" hidden>
     <div class="music-head">
@@ -144,11 +152,24 @@ function musicPlayer() {
       <button type="button" class="music-close" id="music-close" aria-label="Minimizar o player (a música continua)">Minimizar</button>
     </div>
     <div class="music-frame" id="music-frame"></div>
-    <p class="music-note">Player do Spotify. Sem login no Spotify, toca trechos de 30 segundos.</p>
+    <p class="music-note">A música continua enquanto você navega pelo site. Sem login no Spotify, toca trechos de 30 segundos. <a class="music-open" href="https://open.spotify.com/playlist/${esc(playlistId)}" target="_blank" rel="noopener noreferrer">Abrir no Spotify ↗</a></p>
   </div>
   <button type="button" class="music-toggle" id="music-toggle" aria-controls="music-panel" aria-expanded="false">
-    <span class="music-icon" aria-hidden="true">♪</span><span class="music-toggle-text">${esc(music.label)}</span>
+    <span class="music-icon" aria-hidden="true">♪</span><span class="float-label">${esc(music.label)}</span>
   </button>
+</div>`;
+}
+
+/**
+ * Botões flutuantes no canto da tela: atendente virtual (WhatsApp da Alpins)
+ * e trilha sonora. No celular viram só ícones, com o nome mantido para leitores de tela.
+ */
+function floatDock() {
+  return `<div class="float-dock">
+  <a class="float-whatsapp" href="${esc(site.whatsappUrl())}" target="_blank" rel="noopener noreferrer" aria-label="Falar com a atendente virtual da ${esc(site.name)} no WhatsApp">
+    <svg class="float-icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 3C6.98 3 3 6.58 3 11c0 1.9.74 3.64 1.98 5.01L4 21l5.2-1.73c.9.23 1.84.35 2.8.35 5.02 0 9-3.58 9-8.02S17.02 3 12 3zm-4 9.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zm4 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zm4 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/></svg><span class="float-label">Atendente virtual</span>
+  </a>
+  ${musicPlayer()}
 </div>`;
 }
 
@@ -191,6 +212,9 @@ ${FONTS}
 <link rel="stylesheet" href="/css/style.css">
 <link rel="icon" type="image/png" href="${FAVICON}">
 <link rel="apple-touch-icon" href="/images/marca/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="${esc(site.name)}">
 </head>
 <body class="${esc(opts.bodyClass || '')}">
 <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
@@ -200,7 +224,7 @@ ${header()}
 ${opts.content}
 </main>
 ${footer(ctx)}
-${musicPlayer()}
+${floatDock()}
 ${opts.leadPopup === false ? '' : leadPopup()}
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Imagem ampliada" hidden>
   <button class="lightbox-close" id="lightbox-close" type="button" aria-label="Fechar">✕</button>

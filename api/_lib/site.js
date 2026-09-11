@@ -19,6 +19,14 @@ function siteUrl(req) {
   return `${local ? 'http' : 'https'}://${host}`;
 }
 
+/** Aceita o link de compartilhar do Spotify (com ?si=...) ou só o código; devolve o código ou ''. */
+function spotifyPlaylistId(value) {
+  const match = /^(?:https:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?playlist\/)?([A-Za-z0-9]{22})(?:[?#].*)?$/.exec(
+    String(value || '').trim()
+  );
+  return match ? match[1] : '';
+}
+
 module.exports = {
   name: 'Alpins',
   description:
@@ -49,13 +57,19 @@ module.exports = {
   googleSiteVerification: '',
 
   // Trilha sonora: botão flutuante que abre o player do Spotify. O player só é
-  // carregado depois do clique (navegadores não deixam tocar som sozinho).
-  // Para trocar a playlist, cole o código do link open.spotify.com/playlist/<código>.
-  // Código vazio = sem player.
+  // carregado depois do clique (navegadores não deixam tocar som sozinho) e a
+  // música continua enquanto a pessoa navega pelo site.
+  // Para trocar a playlist, cole o link do Spotify (ou só o código) em spotifyPlaylist.
+  // Vazio ou inválido = sem player (e o aviso de privacidade deixa de citá-lo).
   music: {
     label: 'Trilha sonora',
-    title: 'Eu vou subir a montanha',
-    spotifyPlaylistId: '53MTONN4ur0q4BRh01c5me',
+    title: 'Legendários o Propósito HAU!',
+    spotifyPlaylist: 'https://open.spotify.com/playlist/4U6wx4BgB1NjmmXBJJD4Sa',
+  },
+  spotifyPlaylistId,
+  /** Código da playlist configurada, ou '' se não houver uma válida (regra única para o botão e o aviso). */
+  musicPlaylistId() {
+    return spotifyPlaylistId(module.exports.music && module.exports.music.spotifyPlaylist);
   },
 
   // Imagem padrão ao compartilhar o site (WhatsApp, redes sociais).

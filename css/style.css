@@ -402,8 +402,22 @@ p{margin:0 0 16px;line-height:1.65}
 .field-row-prefix span{display:flex;align-items:center;padding-left:16px;color:var(--ink-soft);font-weight:600}
 .field-row.field-row-prefix input{padding-left:4px}
 
-/* ---------- trilha sonora (player do Spotify) ---------- */
-.music{position:fixed;right:18px;bottom:18px;z-index:150;display:flex;flex-direction:column;align-items:flex-end}
+/* ---------- botões flutuantes: atendente virtual + trilha sonora ---------- */
+.float-dock{
+  position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom, 0px));z-index:150;
+  display:flex;flex-direction:column;align-items:flex-end;gap:10px;pointer-events:none;
+}
+.float-dock > *{pointer-events:auto}
+.float-whatsapp{
+  display:inline-flex;align-items:center;gap:8px;min-height:46px;min-width:46px;padding:10px 16px;
+  border-radius:999px;background:#25d366;color:#0b2e17;font-size:.78rem;font-weight:700;letter-spacing:.03em;
+  box-shadow:0 10px 26px rgba(0,0,0,.3);
+}
+.float-whatsapp:hover{background:#1ebe5b}
+.float-icon{flex:none}
+
+/* trilha sonora (player do Spotify) */
+.music{display:flex;flex-direction:column;align-items:flex-end}
 .music-toggle{
   display:inline-flex;align-items:center;gap:8px;min-height:46px;min-width:46px;padding:10px 16px;
   border:1px solid var(--line-light);border-radius:999px;background:var(--ink);color:var(--cream);
@@ -427,13 +441,30 @@ p{margin:0 0 16px;line-height:1.65}
 .music-close:hover{border-color:var(--cream)}
 .music-frame iframe{display:block;width:100%;height:152px;border:0;border-radius:12px}
 .music-note{margin:6px 4px 0;font-size:.68rem;color:var(--cream-soft)}
+.music-open{color:var(--cream);text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+
+/* conteúdo trocado sem recarregar (música contínua) */
+html.is-loading #conteudo{opacity:.55;transition:opacity .15s}
+#conteudo:focus{outline:none}
+
+/* app no celular (rodapé) */
+.app-install{margin-top:22px;max-width:52ch}
+.app-install .eyebrow{margin-bottom:6px}
+.app-install .body-text{margin:0 0 10px}
+.app-install-help{font-size:.82rem;color:var(--ink-soft);margin:8px 0 0}
+.app-install[hidden],.app-install-help[hidden]{display:none}
+
+@media (max-width:600px){
+  .footer-legal{padding-bottom:128px}
+}
 @media (max-width:480px){
-  .music{right:12px;bottom:12px}
-  .music-toggle{padding:10px 14px}
-  .music-toggle-text{display:none}
+  .float-dock{right:12px;bottom:calc(12px + env(safe-area-inset-bottom, 0px))}
+  .float-whatsapp,.music-toggle{width:50px;height:50px;padding:0;justify-content:center}
+  /* só o ícone na tela; o nome continua para leitores de tela */
+  .float-label{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
   .music-panel{width:calc(100vw - 24px)}
 }
-@media print{.music{display:none}}
+@media print{.float-dock{display:none}}
 
 /* ---------- responsive ---------- */
 @media (max-width:900px){

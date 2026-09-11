@@ -478,7 +478,7 @@ function privacy(ctx) {
       <li><strong>Proteção contra envios automáticos:</strong> para limitar abusos no cadastro e na contagem de cliques, guardamos por até 1 dia um código calculado a partir do endereço IP. O IP em si não é guardado.</li>
       <li><strong>Cookies e armazenamento no navegador:</strong> o site não usa cookies de rastreamento nem de publicidade. O único cookie é o de login da área administrativa. No seu navegador fica guardado apenas se a janela de cadastro já foi preenchida ou fechada, para não mostrá-la de novo.</li>
       ${
-        site.music && site.music.spotifyPlaylistId
+        site.musicPlaylistId()
           ? `<li><strong>${esc(site.music.label)} (player do Spotify):</strong> o player só é carregado se você clicar no botão "${esc(site.music.label)}". A partir desse clique, o conteúdo vem do Spotify, que pode usar cookies próprios conforme a política de privacidade dele.</li>`
           : ''
       }
