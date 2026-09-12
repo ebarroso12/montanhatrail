@@ -35,6 +35,35 @@ const FONTS = `<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">`;
 
 /**
+ * Verificação de domínio da Meta. Sem ela o Gerenciador de Eventos não deixa
+ * configurar os eventos agregados do pixel. O valor vem do Gerenciador de
+ * Negócios (Configurações do negócio → Segurança da marca → Domínios).
+ */
+function metaDomainVerification() {
+  const token = String(process.env.META_DOMAIN_VERIFICATION || '').trim();
+  if (!token) return '';
+  return `<meta name="facebook-domain-verification" content="${esc(token)}">`;
+}
+
+/**
+ * Pixel da Meta. O ID vem de META_PIXEL_ID; sem a variável isto devolve string
+ * vazia e o site sai exatamente como antes — nada carrega, nada quebra.
+ * A compra acontece na Shopee e no Mercado Livre, fora do alcance do pixel,
+ * então quem faz o papel de conversão aqui são os eventos disparados no
+ * js/main.js: ViewContent, InitiateCheckout (clique no marketplace),
+ * Contact (WhatsApp) e Lead (cadastro).
+ */
+function metaPixel() {
+  const pixelId = String(process.env.META_PIXEL_ID || '').trim();
+  if (!/^\d{6,20}$/.test(pixelId)) return '';
+  return `<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','${pixelId}');fbq('track','PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=${pixelId}&amp;ev=PageView&amp;noscript=1"></noscript>`;
+}
+
+/**
  * Marca: no cabeçalho, o símbolo "A" + o nome em texto (legível em qualquer
  * tamanho); no rodapé, a logo completa com o slogan. Sem logo configurada,
  * volta para o ícone de montanha + nome.
@@ -208,6 +237,8 @@ ${opts.noindex ? '<meta name="robots" content="noindex, follow">' : `<link rel="
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#14170f">
 ${site.googleSiteVerification ? `<meta name="google-site-verification" content="${esc(site.googleSiteVerification)}">` : ''}
+${metaDomainVerification()}
+${metaPixel()}
 ${FONTS}
 <link rel="stylesheet" href="/css/style.css">
 <link rel="icon" type="image/png" href="${FAVICON}">

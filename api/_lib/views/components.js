@@ -27,10 +27,16 @@ const BUTTON_LABELS = {
 function marketplaceButtons(product, placement) {
   if (!product.links.length) return '';
   const labels = BUTTON_LABELS[placement] || BUTTON_LABELS.card;
+  // Preço e nome viajam no botão para os eventos do pixel (js/main.js) poderem
+  // mandar valor e produto junto com o clique — sem eles o evento chega vazio.
+  const trackPrice = product.onSale ? product.salePrice : product.price;
+  const trackAttrs =
+    `data-track-product="${product.id}" data-track-name="${esc(product.name)}"` +
+    (trackPrice != null ? ` data-track-price="${trackPrice}"` : '');
   const buttons = product.links
     .map(
       (link) =>
-        `<a class="btn btn-market btn-${link.marketplace}" href="${esc(link.url)}" target="_blank" rel="noopener noreferrer sponsored" data-track-product="${product.id}" data-track-marketplace="${link.marketplace}" data-track-placement="${placement}">${labels[link.marketplace]} <span aria-hidden="true">↗</span><span class="sr-only"> (abre em nova aba)</span></a>`
+        `<a class="btn btn-market btn-${link.marketplace}" href="${esc(link.url)}" target="_blank" rel="noopener noreferrer sponsored" ${trackAttrs} data-track-marketplace="${link.marketplace}" data-track-placement="${placement}">${labels[link.marketplace]} <span aria-hidden="true">↗</span><span class="sr-only"> (abre em nova aba)</span></a>`
     )
     .join('');
   return `<div class="market-actions market-actions-${placement}">${buttons}</div>`;

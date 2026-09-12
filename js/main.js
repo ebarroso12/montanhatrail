@@ -2,6 +2,44 @@
 (function () {
   "use strict";
 
+  /* ---------- eventos de conversão (pixel da Meta) ---------- */
+  // A compra acontece na Shopee e no Mercado Livre, onde o pixel não alcança.
+  // Estes são os eventos que substituem a compra para a Meta otimizar: o
+  // clique no marketplace vale como início de checkout, o WhatsApp vale como
+  // contato. Sem META_PIXEL_ID configurada, fbq não existe e tudo vira no-op.
+  function fbTrack(event, params) {
+    try {
+      if (typeof window.fbq !== "function") return;
+      var clean = {};
+      for (var k in params) {
+        if (Object.prototype.hasOwnProperty.call(params, k) && params[k] != null && params[k] !== "") {
+          clean[k] = params[k];
+        }
+      }
+      window.fbq("track", event, clean);
+    } catch (err) {
+      /* medição nunca pode quebrar a página */
+    }
+  }
+
+  /** Lê produto, nome e preço de um botão de marketplace. */
+  function trackedProduct(el) {
+    var preco = parseFloat(el.getAttribute("data-track-price"));
+    return {
+      content_ids: [String(el.getAttribute("data-track-product") || "")],
+      content_name: el.getAttribute("data-track-name") || "",
+      content_type: "product",
+      value: isFinite(preco) && preco > 0 ? preco : null,
+      currency: "BRL"
+    };
+  }
+
+  // Página de produto: quem chega aqui já escolheu o modelo.
+  if (document.body && document.body.classList.contains("page-product")) {
+    var primeiroBotao = document.querySelector("[data-track-product]");
+    if (primeiroBotao) fbTrack("ViewContent", trackedProduct(primeiroBotao));
+  }
+
   /* ---------- mobile nav ---------- */
   var navToggle = document.querySelector(".nav-toggle");
   var mainNav = document.querySelector(".main-nav");
@@ -162,8 +200,22 @@
   /* ---------- click tracking (marketplace buttons) ---------- */
   // Fire-and-forget: never blocks or delays the actual link click.
   document.addEventListener("click", function (e) {
-    var link = e.target && e.target.closest ? e.target.closest("[data-track-product]") : null;
+    if (!e.target || !e.target.closest) return;
+
+    // WhatsApp: o único ponto do funil que fecha venda dentro do nosso alcance.
+    var zap = e.target.closest('a[href*="wa.me"], a[href*="api.whatsapp.com"]');
+    if (zap) {
+      fbTrack("Contact", { method: "whatsapp", page: window.location.pathname });
+      return;
+    }
+
+    var link = e.target.closest("[data-track-product]");
     if (!link) return;
+
+    var evento = trackedProduct(link);
+    evento.marketplace = link.getAttribute("data-track-marketplace") || "";
+    fbTrack("InitiateCheckout", evento);
+
     try {
       fetch("/api/track-click", {
         method: "POST",
@@ -283,6 +335,7 @@
             form.reset();
             success.hidden = false;
             writePopupState("feito");
+            fbTrack("Lead", { content_name: source });
             if (onSuccess) onSuccess();
           } else {
             fail(res.data.message || "Não foi possível enviar. Tente novamente.", res.data.field ? field(res.data.field) : null);
